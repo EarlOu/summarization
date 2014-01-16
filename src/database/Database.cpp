@@ -1,6 +1,7 @@
 #include "database/Database.hpp"
 
 #include <stdio.h>
+#include <assert.h>
 
 Database::Database(string path)
 {
@@ -14,7 +15,13 @@ Database::Database(string path)
   char buf[128];
   while (fscanf(ifile, "%s", buf) == 1)
   {
-    string p = dir_path + '/' + buf;
-    _dataset.push_back(Dataset(buf, p));
+    string name(buf);
+    _dataset.insert(
+        pair<string, Dataset>(name, Dataset(name, dir_path + '/' + name)));
   }
+}
+
+Dataset& Database::getDataset(const string& name) {
+  assert(_dataset.find(name) != _dataset.end());
+  return _dataset[name];
 }

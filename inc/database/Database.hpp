@@ -4,15 +4,16 @@
 #include "database/Dataset.hpp"
 
 #include <string>
-#include <vector>
+#include <map>
 
 using namespace std;
 
 class Database {
   public:
     Database(string path);
+    Dataset& getDataset(const string& name);
   private:
-    vector<Dataset> _dataset;
+    map<string, Dataset> _dataset;
 };
 
 #endif

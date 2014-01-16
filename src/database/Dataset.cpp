@@ -1,6 +1,6 @@
 #include "database/dataset.hpp"
 
-Dataset::Dataset(string name, string path):_name(name)
+Dataset::Dataset(const string& name, const string& path):_name(name)
 {
   string index_path = path + "/index.txt";
   FILE* ifile = fopen(index_path.c_str(), "r");

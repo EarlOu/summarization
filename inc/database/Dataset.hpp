@@ -10,9 +10,12 @@ using namespace std;
 
 class Dataset {
   public:
-    Dataset(string name, string path);
+    Dataset() {};
+    Dataset(const string& name, const string& path);
+    const string& getName() {return _name;}
+    vector<VideoInfo>& getVideoInfo() {return _video;}
   private:
-    string _name;
+    const string _name;
     vector<VideoInfo> _video;
 };
 
