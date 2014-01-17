@@ -1,5 +1,5 @@
-#ifndef SEGMENT_H
-#define SEGMENT_H
+#ifndef SEGMENT_HPP
+#define SEGMENT_HPP
 
 struct Segment
 {

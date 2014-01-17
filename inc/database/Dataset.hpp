@@ -1,5 +1,5 @@
-#ifndef DATASET_H
-#define DATASET_H
+#ifndef DATASET_HPP
+#define DATASET_HPP
 
 #include "common/VideoInfo.hpp"
 
