@@ -6,3 +6,6 @@ target_link_libraries(old_event_player ${OpenCV_LIBS})
 
 add_executable(frame_diff frame_diff.cpp)
 target_link_libraries(frame_diff ${OpenCV_LIBS})
+
+add_executable(event_player event_player.cpp)
+target_link_libraries(event_player ${OpenCV_LIBS} common database)
