@@ -1,1 +1,1 @@
-add_library(common VideoInfo.cpp)
+add_library(common VideoInfo.cpp util.cpp)
