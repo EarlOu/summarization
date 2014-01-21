@@ -1,0 +1,165 @@
+# A: girl in black
+# B: boy in gray
+# C: girl in blue
+# D: girl in yellow
+# E: boy in brown
+# F: man in black
+# G: man in black
+
+# B stand up in A's sit
+1 190 227
+
+# B walk to middle sit
+1 227 345
+
+# B sit down at middle sit
+1 345 395
+
+# B stand up from middle sit
+1 1494 1511
+
+# B walk away
+1 1511 1562
+
+# F enter the room
+1 1975 2255
+2 2037 2192
+
+# A enter the room
+1 3008 3269
+2 3104 3228
+
+# A look at the middle sit
+1 4052 4228
+
+# A, B, C walk out
+0 5421 5724
+1 5563 5866
+2 5597 5849
+3 5533 5674
+
+# B put on coat
+0 5693 5774
+1 5696 5793
+2 5685 5775
+
+# F walk out
+1 6484 6589
+2 6503 6586
+
+# F walk in
+1 7341 7413
+
+# A walk in
+0 7292 7449
+1 7155 7449
+2 7297 7449
+
+# F walk out
+1 7968 8044
+2 8023 8068
+
+# A sit down
+0 9293 9373
+1 9293 9373
+2 9293 9342
+
+# F walk in
+1 12529 12583
+2 12510 12577
+
+# A stand up
+0 12707 12762
+1 12707 12762
+2 12729 12762
+3 12725 12741
+
+# G seek A
+1 12916 12960
+2 12905 12958
+
+# A walk out
+0 12950 13078
+1 12960 13104
+2 12958 13098
+
+# D walk in
+0 15752 15898
+1 15660 15898
+2 15703 15860
+2 15872 15910
+3 15821 15851
+
+# D sit down
+0 18324 18416
+2 18331 18424
+3 18317 18408
+
+# E stand up
+0 20693 20720
+2 20708 20733
+3 20690 20718
+
+# E walk out
+0 20720 20853
+2 20733 20783
+2 20833 20896
+3 20718 20765
+
+# D stand up
+0 20972 21024
+2 20996 21034
+3 20972 21028
+
+# D walk out
+0 21024 21141
+2 21034 21053
+2 21106 21153
+
+# A walk in
+0 22887 23044
+3 22953 22984
+
+# E walk in
+0 24264 24466
+3 24334 24464
+
+# E sit down
+0 24466 24510
+3 24464 24510
+
+# A sit down
+0 24896 24964
+
+# A stand up
+0 30918 31006
+3 31008 31048
+
+# A walk out
+0 31006 31124
+
+# B walk in
+0 31286 31374
+3 31353 31374
+
+# B sit down in A's sit
+0 31374 31396
+
+# B stand up in A's sit
+0 31635 31659
+
+# B walk to middle sit
+0 31659 31720
+3 31652 31753
+
+# B sit down in middle sit
+0 31720 31748
+3 31753 31748
+
+# B stand up in middle sit
+0 32039 32064
+3 32038 32064
+
+# B walk away
+0 32064 32140
+3 32064 32114
