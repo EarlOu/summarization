@@ -18,3 +18,6 @@ target_link_libraries(random_sample ${OpenCV_LIBS} common database)
 
 add_executable(uni_sample uniform_sample.cpp)
 target_link_libraries(uni_sample ${OpenCV_LIBS} common database)
+
+add_executable(mswave_feature mswave_feature.cpp)
+target_link_libraries(mswave_feature ${OpenCV_LIBS} common database)
