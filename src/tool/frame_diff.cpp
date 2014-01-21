@@ -3,7 +3,7 @@ using namespace cv;
 
 #include <stdio.h>
 
-#define DIFF_TH 10
+#define DIFF_TH 20
 #define DIFF_RATE 0.005
 
 int main(int argc, char *argv[]) {

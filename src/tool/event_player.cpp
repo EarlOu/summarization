@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
         Mat frame;
         cap[seg.video_id].read(frame);
         imshow("video", frame);
-        waitKey(5);
+        waitKey(1);
       }
     }
-
+    waitKey(0);
   }
 }
