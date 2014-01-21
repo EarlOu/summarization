@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     for (int j=0, m=e.size(); j<m; ++j)
     {
       Segment seg = e[j];
-      cap[seg.video_id].set(CV_CAP_PROP_POS_FRAMES, seg.start);
+      cap[seg.video_id].set(CV_CAP_PROP_POS_FRAMES,
+          seg.start - video[seg.video_id].offset);
       for (int k=seg.start; k<seg.end; ++k) {
         Mat frame;
         cap[seg.video_id].read(frame);
