@@ -21,3 +21,6 @@ target_link_libraries(uni_sample ${OpenCV_LIBS} common database)
 
 add_executable(mswave_feature mswave_feature.cpp)
 target_link_libraries(mswave_feature ${OpenCV_LIBS} common database)
+
+add_executable(generate_keyframe generate_keyframe.cpp)
+target_link_libraries(generate_keyframe ${OpenCV_LIBS} common database)
