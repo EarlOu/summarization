@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  int delay;
+  int delay = 0;
   if (argc == 4) {
     delay = atoi(argv[3]);
   }
@@ -31,7 +31,12 @@ int main(int argc, char *argv[]) {
   Mat frame;
   while (cap.read(frame)) {
     Mat mask;
-    mog(frame, mask, 0.0007);
+
+    // for office1 only
+    resize(frame, frame, Size(), 0.5, 0.5);
+
+    // mog(frame, mask, 0.0007); // for bl2, lobby
+    mog(frame, mask); // for office 1
     mask = mask == 255;
 
     Mat hsv;
@@ -39,7 +44,7 @@ int main(int argc, char *argv[]) {
     Mat feature(256, 1, CV_32FC1);
     feature.setTo(0);
     if (countNonZero(mask) >
-        frame.size().height * frame.size().width * 0.01) {
+        frame.size().height * frame.size().width * 0.02) {
       for (int y=0; y<hsv.size().height; ++y) {
         uchar* ptr = hsv.ptr<uchar>(y);
         for (int x=0; x<hsv.size().width; ++x, ptr+=3) {
