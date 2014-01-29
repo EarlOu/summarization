@@ -46,3 +46,32 @@ Dataset::Dataset(const string& name, const string& path):_name(name)
     e.clear();
   }
 }
+
+void Dataset::evaluateKeyframe(const vector<Keyframe>& keyframe)
+{
+  int tp = 0;
+  int redundant = 0;
+  int event_get = 0;
+  vector<bool> event_hit;
+  for (size_t e=0; e<_event.size(); ++e) event_hit.push_back(false);
+
+  for (size_t k=0; k<keyframe.size(); ++k) {
+    for (size_t e=0; e<_event.size(); ++e) {
+      for (size_t s=0; s<_event[e].size(); ++s) {
+        const Segment & seg = _event[e][s];
+        const Keyframe & key = keyframe[k];
+        if (seg.video_id != key.video_id) continue;
+        if (key.frame_id >= seg.start && key.frame_id < seg.end) {
+          if (event_hit[e]) redundant++;
+          else ++event_get;
+          event_hit[e] = true;
+          ++tp;
+          break;
+        }
+      }
+    }
+  }
+  printf("precision: %d/%d(%f)\n", tp, (int) keyframe.size(), tp / (float) keyframe.size());
+  printf("recall: %d/%d(%f)\n", event_get, (int) _event.size(), event_get / (float) _event.size());
+  printf("redundant frame: %d/%d(%f)\n", redundant, (int) keyframe.size(), redundant / (float) keyframe.size());
+}

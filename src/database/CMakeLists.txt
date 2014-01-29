@@ -1,1 +1,1 @@
-add_library(database Database.cpp Dataset.cpp)
+add_library(database Dataset.cpp)

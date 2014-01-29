@@ -1,4 +1,4 @@
-#include "database/Database.hpp"
+#include "database/Dataset.hpp"
 
 #include <stdio.h>
 #include <vector>
@@ -6,8 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Database db(argv[1]);
-  Dataset& set = db.getDataset("bl2");
+  Dataset set("name", argv[1]);
   vector<VideoInfo>& video = set.getVideoInfo();
   vector<Event>& event = set.getEvent();
 
