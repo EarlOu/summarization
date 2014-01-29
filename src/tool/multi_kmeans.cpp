@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   int n = atoi(argv[3]);
   vector<Mat> features;
   vector<vector<int> > fids;
-  Dataset set("set", argv[1]);
+  Dataset set(argv[1]);
   parseFeature(argv[2], features, fids);
   //vector<VideoInfo>& info = set.getVideoInfo();
   FILE *ofile = fopen(argv[4], "w");

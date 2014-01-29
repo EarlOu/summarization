@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Dataset set("name", argv[1]);
+  Dataset set(argv[1]);
   vector<VideoInfo>& video = set.getVideoInfo();
   vector<Event>& event = set.getEvent();
 

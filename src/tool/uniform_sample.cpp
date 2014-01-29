@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     printf("usage: %s <dataset> <k> <output.txt>\n", argv[0]);
     return -1;
   }
-  Dataset set("test", argv[1]);
+  Dataset set(argv[1]);
   const vector<VideoInfo> & video = set.getVideoInfo();
 
   vector<int> len;

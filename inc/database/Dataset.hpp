@@ -13,14 +13,12 @@ using namespace std;
 class Dataset {
   public:
     Dataset() {};
-    Dataset(const string& name, const string& path);
-    const string& getName() {return _name;}
+    Dataset(const string& path);
     vector<VideoInfo>& getVideoInfo() {return _video;}
     vector<Event>& getEvent() {return _event;}
 
     void evaluateKeyframe(const vector<Keyframe>& keyframe);
   private:
-    const string _name;
     vector<VideoInfo> _video;
     vector<Event> _event;
 };

@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     scale = atoi(argv[2]);
   }
 
-  Dataset set("name", argv[1]);
+  Dataset set(argv[1]);
   vector<VideoInfo>& info = set.getVideoInfo();
 
   for (size_t vid=0; vid<info.size(); ++vid) {

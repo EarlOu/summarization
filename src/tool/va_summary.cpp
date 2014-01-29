@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  Dataset set(argv[1], argv[1]);
+  Dataset set(argv[1]);
   vector<VideoInfo> & info = set.getVideoInfo();
   FILE* ofile = fopen(argv[3], "w");
 

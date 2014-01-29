@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  Dataset set("dataset", argv[1]);
+  Dataset set(argv[1]);
   vector<VideoInfo> & video = set.getVideoInfo();
   vector<Event> & event = set.getEvent();
   vector<VideoCapture> cap;

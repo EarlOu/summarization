@@ -1,12 +1,12 @@
 #include "database/dataset.hpp"
 
-Dataset::Dataset(const string& name, const string& path):_name(name)
+Dataset::Dataset(const string& path)
 {
   string index_path = path + "/index.txt";
   FILE* ifile = fopen(index_path.c_str(), "r");
   if (ifile == NULL)
   {
-    perror(string("Failed to open database index: " + name).c_str());
+    perror((string("Failed to open database index: ") + path).c_str());
     return;
   }
 
