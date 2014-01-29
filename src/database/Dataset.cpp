@@ -1,4 +1,5 @@
 #include "database/dataset.hpp"
+#include <assert.h>
 
 Dataset::Dataset(const string& path)
 {
@@ -7,7 +8,7 @@ Dataset::Dataset(const string& path)
   if (ifile == NULL)
   {
     perror((string("Failed to open database index: ") + path).c_str());
-    return;
+    assert(false);
   }
 
   char buf[128];
