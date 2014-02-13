@@ -56,7 +56,9 @@ void Dataset::evaluateKeyframe(const vector<Keyframe>& keyframe)
   vector<bool> event_hit;
   for (size_t e=0; e<_event.size(); ++e) event_hit.push_back(false);
 
+  bool isAdd = false;
   for (size_t k=0; k<keyframe.size(); ++k) {
+    isAdd = false;
     for (size_t e=0; e<_event.size(); ++e) {
       for (size_t s=0; s<_event[e].size(); ++s) {
         const Segment & seg = _event[e][s];
@@ -66,7 +68,8 @@ void Dataset::evaluateKeyframe(const vector<Keyframe>& keyframe)
           if (event_hit[e]) redundant++;
           else ++event_get;
           event_hit[e] = true;
-          ++tp;
+          if (!isAdd) ++tp;
+          isAdd = true;
           break;
         }
       }

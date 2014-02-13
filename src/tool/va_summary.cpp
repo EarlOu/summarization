@@ -14,14 +14,14 @@ int main(int argc, char *argv[]) {
   vector<VideoInfo> & info = set.getVideoInfo();
   FILE* ofile = fopen(argv[3], "w");
 
-  //double threshold = 0.57; // bl7f
-  //double threshold = 0.4; // office
-  double threshold = 0.57; // bl7f
+  //double threshold = 0.56; // bl7f
+  //double threshold = 0.35; // office
+  double threshold = 0.52; // lobby
   int win = 31;
 
   for (size_t vid=0; vid<info.size(); ++vid) {
     char buf[128];
-    sprintf(buf, "%s/score_%d.txt", argv[2], (int) vid);
+    sprintf(buf, "%s/%d.txt", argv[2], (int) vid);
     FILE* ifile = fopen(buf, "r");
 
     double score = 0.0;

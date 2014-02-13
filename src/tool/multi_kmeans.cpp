@@ -12,11 +12,11 @@ using namespace std;
 
 #include <iostream>
 
-void parseFeature(const char* path, vector<Mat> & features, vector<vector<int> >& index);
+void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector<int> >& index);
 
 int main(int argc, char *argv[]) {
   if (argc != 5) {
-    printf("usage: %s <dataset> <feature set> <n> <output.txt>\n", argv[0]);
+    printf("usage: %s <dataset> <feature set dir> <n> <output.txt>\n", argv[0]);
     return -1;
   }
 
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   vector<Mat> features;
   vector<vector<int> > fids;
   Dataset set(argv[1]);
-  parseFeature(argv[2], features, fids);
+  parseFeature(argv[2], set.getVideoInfo().size(), features, fids);
   //vector<VideoInfo>& info = set.getVideoInfo();
   FILE *ofile = fopen(argv[4], "w");
   vector<int> all_fid;
@@ -72,16 +72,13 @@ int main(int argc, char *argv[]) {
 
 }
 
-void parseFeature(const char* path, vector<Mat> & features, vector<vector<int> >& fid) {
+void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector<int> >& fid) {
   string prefix = string(path);
-  prefix = prefix.substr(0, prefix.find_last_of('/'));
-
-  char buf[1024];
-  FILE* ifile = fopen(path, "r");
-  while(fscanf(ifile, "%s", buf) == 1) {
-    string filepath = prefix + '/' + string(buf);
-    printf("%s\n", filepath.c_str());
-    FILE* file = fopen(filepath.c_str(), "r");
+  for (int file_id = 0; file_id < k; ++file_id) {
+    char buf[128];
+    sprintf(buf, "%s/%d.txt", path, file_id);
+    printf("%s\n", buf);
+    FILE* file = fopen(buf, "r");
     bool finish = false;
     vector<Mat> feature;
     vector<int> idx;
@@ -113,5 +110,4 @@ void parseFeature(const char* path, vector<Mat> & features, vector<vector<int> >
     features.push_back(f);
     fid.push_back(idx);
   }
-  fclose(ifile);
 }
