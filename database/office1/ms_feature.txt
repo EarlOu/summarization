@@ -1,4 +1,0 @@
-ms_feature/office_1.txt
-ms_feature/office_2.txt
-ms_feature/office_3.txt
-ms_feature/office_4.txt
