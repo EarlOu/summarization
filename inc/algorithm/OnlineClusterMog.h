@@ -8,7 +8,8 @@ class OnlineClusterMog : public OnlineCluster
 {
 
 public:
-    OnlineClusterMog():_K(9), _alpha(0.004), _T(0.5) {};
+    // BL2
+    OnlineClusterMog():_K(9), _alpha(0.004), _T(0.5), _INIT_SIGMA(0.2) {};
     AlgorithmInfo* info() const;
     int cluster(InputArray feature, OutputArray residue);
 
@@ -31,6 +32,7 @@ private:
     vector<Cluster> _cluster;
     Ptr<FeatureDistance> _featureDiff;
     double _T;
+    double _INIT_SIGMA;
 
     class ClusterComparator {
     public:

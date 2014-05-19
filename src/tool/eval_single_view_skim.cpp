@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
   Dataset set(argv[1]);
   FILE* ifile = fopen(argv[3], "r");
   int video_id = atoi(argv[2]);
-  int offset = atoi(argv[4]);
   vector<Segment> skim;
   parseSingleViewSkim(ifile, set.getVideoInfo()[video_id].offset, skim);
   set.evaluateSingleViewSkim(skim, video_id);

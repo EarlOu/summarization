@@ -5,4 +5,4 @@ add_executable(gmm_single_view single_view.cpp)
 target_link_libraries(gmm_single_view ${OpenCV_LIBS} algorithm)
 
 add_executable(gmm_multi_view multi_view.cpp Server.cpp util.cpp VideoSensor.cpp)
-target_link_libraries(gmm_multi_view ${OpenCV_LIBS} algorithm common)
+target_link_libraries(gmm_multi_view ${OpenCV_LIBS} algorithm common database)

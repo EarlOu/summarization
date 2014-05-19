@@ -5,6 +5,8 @@
 #include <vector>
 #include "util.h"
 #include "Server.h"
+#include "VideoSensor.h"
+#include "database/Dataset.h"
 
 using namespace cv;
 using std::vector;
@@ -14,12 +16,17 @@ int main(int argc, char** argv)
     srand(time(NULL));
     if (argc != 2)
     {
-        printf("usage: %s <file_list.txt>\n", argv[0]);
+        printf("usage: %s <dataset>\n", argv[0]);
         return -1;
     }
 
     vector<VideoSensor> sensors;
-    parseInput(argv[1], sensors);
+    Dataset set(argv[1]);
+    for (int i=0, n=set.getVideoInfo().size(); i<n; ++i) {
+        VideoInfo info = set.getVideoInfo()[i];
+        VideoCapture cap(info.path);
+        sensors.push_back(VideoSensor(cap, info.offset));
+    }
 
     if (sensors.size() == 0)
     {
