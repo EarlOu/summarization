@@ -13,26 +13,11 @@ target_link_libraries(event_player ${OpenCV_LIBS} common database)
 add_executable(eval_keyframe eval_keyframe.cpp)
 target_link_libraries(eval_keyframe common database)
 
-add_executable(random_sample random_sample.cpp)
-target_link_libraries(random_sample ${OpenCV_LIBS} common database)
+add_executable(eval_single_view_skim eval_single_view_skim.cpp)
+target_link_libraries(eval_single_view_skim common database)
 
-add_executable(uni_sample uniform_sample.cpp)
-target_link_libraries(uni_sample ${OpenCV_LIBS} common database)
+add_executable(eval_multi_view_skim eval_multi_view_skim.cpp)
+target_link_libraries(eval_multi_view_skim common database)
 
-add_executable(mswave_feature mswave_feature.cpp)
-target_link_libraries(mswave_feature ${OpenCV_LIBS} common database)
-
-add_executable(generate_keyframe generate_keyframe.cpp)
-target_link_libraries(generate_keyframe ${OpenCV_LIBS} common database)
-
-add_executable(single_kmeans single_kmeans.cpp)
-target_link_libraries(single_kmeans ${OpenCV_LIBS} common database)
-
-add_executable(multi_kmeans multi_kmeans.cpp)
-target_link_libraries(multi_kmeans ${OpenCV_LIBS} common database)
-
-add_executable(visual_attention visual_attention.cpp)
-target_link_libraries(visual_attention ${OpenCV_LIBS} common database)
-
-add_executable(va_summary va_summary.cpp)
-target_link_libraries(va_summary ${OpenCV_LIBS} common database)
+add_executable(concat_single_view_skim concat_single_view_skim.cpp)
+target_link_libraries(concat_single_view_skim common database)

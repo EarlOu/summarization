@@ -1,5 +1,6 @@
 add_subdirectory(common)
 add_subdirectory(database)
 add_subdirectory(tool)
+add_subdirectory(baseline)
+add_subdirectory(mswave)
 add_subdirectory(test)
-
