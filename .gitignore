@@ -1,4 +1,5 @@
 build
-result
 *.mp4
 *.avi
+*.yuv
+*.jpg
