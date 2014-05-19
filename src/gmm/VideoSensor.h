@@ -2,10 +2,10 @@
 #define VIDEO_SENSOR_H
 
 #include <opencv2/opencv.hpp>
-#include "OnlineClusterMog.h"
-#include "FeatureExtractorCl.h"
-#include "FeatureDistanceNorm.h"
-#include "Shot.h"
+#include "algorithm/OnlineClusterMog.h"
+#include "algorithm/FeatureExtractorCl.h"
+#include "algorithm/FeatureDistanceNorm.h"
+#include "common/Segment.h"
 
 using namespace cv;
 
@@ -26,7 +26,7 @@ public:
     bool receiveFeature(vector<Mat>& features, vector<double>& scores);
     int getWidth() {return _cap.get(CV_CAP_PROP_FRAME_WIDTH);}
     int getHeight() {return _cap.get(CV_CAP_PROP_FRAME_HEIGHT);}
-    void write(VideoWriter& writer, Shot& s);
+    void write(VideoWriter& writer, Segment& s);
 
 private:
     int _index;

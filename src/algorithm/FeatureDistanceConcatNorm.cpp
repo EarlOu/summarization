@@ -1,4 +1,4 @@
-#include "FeatureDistanceConcatNorm.h"
+#include "algorithm/FeatureDistanceConcatNorm.h"
 
 double FeatureDistanceConcatNorm::diff(InputArray iFeature1, InputArray iFeature2)
 {

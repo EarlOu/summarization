@@ -1,4 +1,4 @@
-#include "FeatureExtractorCl.h"
+#include "algorithm/FeatureExtractorCl.h"
 #include <math.h>
 
 void FeatureExtractorCl::extract(InputArray iFrame, OutputArray oFeature)

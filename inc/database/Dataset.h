@@ -1,10 +1,10 @@
-#ifndef DATASET_HPP
-#define DATASET_HPP
+#ifndef DATASET_H
+#define DATASET_H
 
-#include "database/Event.hpp"
-#include "common/VideoInfo.hpp"
-#include "common/Keyframe.hpp"
-#include "common/Segment.hpp"
+#include "Event.h"
+#include "common/VideoInfo.h"
+#include "common/Keyframe.h"
+#include "common/Segment.h"
 
 #include <string>
 #include <vector>

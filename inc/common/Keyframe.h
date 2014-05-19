@@ -1,5 +1,5 @@
-#ifndef KEYFRAME_HPP
-#define KEYFRAME_HPP
+#ifndef KEYFRAME_H
+#define KEYFRAME_H
 
 struct Keyframe {
   int video_id;

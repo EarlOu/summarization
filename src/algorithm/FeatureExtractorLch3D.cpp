@@ -1,4 +1,4 @@
-#include "FeatureExtractorLch3D.h"
+#include "algorithm/FeatureExtractorLch3D.h"
 #include <math.h>
 
 void FeatureExtractorLch3D::extract(InputArray iFrame, OutputArray oFeature) {

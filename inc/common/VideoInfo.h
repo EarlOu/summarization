@@ -1,5 +1,5 @@
-#ifndef VIDEO_INFO_HPP
-#define VIDEO_INFO_HPP
+#ifndef VIDEO_INFO_H
+#define VIDEO_INFO_H
 
 #include <string>
 using namespace std;

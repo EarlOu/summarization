@@ -86,7 +86,7 @@ bool VideoSensor::receiveFeature(vector<Mat>& features, vector<double>& scores)
     return true;
 }
 
-void VideoSensor::write(VideoWriter& writer, Shot& s)
+void VideoSensor::write(VideoWriter& writer, Segment& s)
 {
     _cap.set(CV_CAP_PROP_POS_FRAMES, s.start - _offset);
     for (int i=0, l=s.end - s.start; i<l; ++i)

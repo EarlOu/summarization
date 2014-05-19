@@ -1,4 +1,4 @@
-#include "common/util.hpp"
+#include "common/util.h"
 #include <stdio.h>
 
 void writeKeyframe(const vector<Keyframe>& keyframe, FILE* ofile) {
@@ -15,10 +15,6 @@ void parseKeyframe(FILE* ifile ,vector<Keyframe>& keyframe) {
 }
 
 void parseSingleViewSkim(FILE* ifile, int offset, vector<Segment>& skim) {
-//  int vid, start, end;
-//  while (fscanf(ifile, "%d %d %d", &vid, &start, &end) == 3) {
-//    skim.push_back(Segment(vid, start, end));
-//  }
   int index = offset;
   int chose;
   Segment lastSegment(0, -1, -1);

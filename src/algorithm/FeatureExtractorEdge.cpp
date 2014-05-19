@@ -1,4 +1,4 @@
-#include "FeatureExtractorEdge.h"
+#include "algorithm/FeatureExtractorEdge.h"
 #include <math.h>
 
 FeatureExtractorEdge::FeatureExtractorEdge():_edge_th(10)

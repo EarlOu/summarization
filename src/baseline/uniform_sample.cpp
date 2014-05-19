@@ -1,6 +1,6 @@
-#include "database/Dataset.hpp"
-#include "common/Keyframe.hpp"
-#include "common/util.hpp"
+#include "database/Dataset.h"
+#include "common/Keyframe.h"
+#include "common/util.h"
 
 #include <opencv2/opencv.hpp>
 using namespace cv;

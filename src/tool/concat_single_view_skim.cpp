@@ -1,6 +1,6 @@
-#include "database/Dataset.hpp"
-#include "common/Segment.hpp"
-#include "common/util.hpp"
+#include "database/Dataset.h"
+#include "common/Segment.h"
+#include "common/util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

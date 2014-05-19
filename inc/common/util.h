@@ -1,9 +1,9 @@
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#ifndef UTIL_H
+#define UTIL_H
 
-#include "common/Keyframe.hpp"
-#include "common/Segment.hpp"
-#include "common/VideoInfo.hpp"
+#include "Keyframe.h"
+#include "Segment.h"
+#include "VideoInfo.h"
 
 #include <vector>
 #include <string>

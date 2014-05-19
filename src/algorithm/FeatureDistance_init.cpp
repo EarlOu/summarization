@@ -1,7 +1,7 @@
-#include "FeatureDistance.h"
-#include "FeatureDistanceNorm.h"
-#include "FeatureDistanceConcatNorm.h"
-#include "util.h"
+#include "algorithm/FeatureDistance.h"
+#include "algorithm/FeatureDistanceNorm.h"
+#include "algorithm/FeatureDistanceConcatNorm.h"
+#include "algorithm/util.h"
 
 CV_INIT_ALGORITHM(FeatureDistanceNorm, "FeatureDistance.NORM",
     obj.info()->addParam(obj, "normType", obj._normType));

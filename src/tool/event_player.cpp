@@ -1,7 +1,7 @@
-#include "common/VideoInfo.hpp"
-#include "database/Event.hpp"
-#include "database/Dataset.hpp"
-#include "common/Segment.hpp"
+#include "common/VideoInfo.h"
+#include "database/Event.h"
+#include "database/Dataset.h"
+#include "common/Segment.h"
 
 #include <opencv2/opencv.hpp>
 using namespace cv;

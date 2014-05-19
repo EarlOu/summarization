@@ -2,7 +2,7 @@
 #define SERVER_H
 
 #include "VideoSensor.h"
-#include "Shot.h"
+#include "common/Segment.h"
 #include <opencv2/opencv.hpp>
 #include <vector>
 
@@ -20,7 +20,7 @@ public:
     void run();
 private:
     vector<VideoSensor> _sensors;
-    vector<vector<Shot> > _shots;
+    vector<vector<Segment> > _shots;
     VideoWriter& _writer;
 
     void nextSelection(vector<bool>& selects);
@@ -28,8 +28,8 @@ private:
     int computeTotalLength();
     void createShotArray();
     void closeShot(int index);
-    void postprocess(vector<vector<vector<Shot> > >& shots);
-    void write(vector<vector<vector<Shot> > >& shots);
+    void postprocess(vector<vector<vector<Segment> > >& shots);
+    void write(vector<vector<vector<Segment> > >& shots);
 };
 
 #endif

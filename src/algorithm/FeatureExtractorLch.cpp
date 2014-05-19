@@ -1,11 +1,11 @@
-#include "FeatureExtractorLch3D.h"
+#include "algorithm/FeatureExtractorLch.h"
 #include <math.h>
 
-void FeatureExtractorLch3D::extract(InputArray iFrame, OutputArray oFeature) {
+void FeatureExtractorLch::extract(InputArray iFrame, OutputArray oFeature) {
     _h_bin = (int) powl(2, _h_bit);
     _s_bin = (int) powl(2, _s_bit);
     _v_bin = (int) powl(2, _v_bit);
-    _dim = _h_bin * _s_bin * _v_bin;
+    _dim = _h_bin + _s_bin + _v_bin;
 
     Mat rgbImg = iFrame.getMat();
     Mat hsvImg;
@@ -38,7 +38,7 @@ void FeatureExtractorLch3D::extract(InputArray iFrame, OutputArray oFeature) {
     }
 }
 
-void FeatureExtractorLch3D::extractBlockHist(InputArray iBlock, OutputArray oFeature)
+void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeature)
 {
     const static float MAX_H = 180.0f;
     const static float MAX_S = 255.0f;
@@ -63,20 +63,47 @@ void FeatureExtractorLch3D::extractBlockHist(InputArray iBlock, OutputArray oFea
         for (int x=0; x<w; ++x)
         {
             int xx =  3 * x;
-            unsigned char h = ptr[xx];
-            unsigned char s = ptr[xx + 1];
-            unsigned char v = ptr[xx + 2];
+            float h = ptr[xx];
+            float s = ptr[xx + 1];
+            float v = ptr[xx + 2];
 
-            int hi = min((int) floor(h/h_step), _h_bin - 1);
-            int si = min((int) floor(s/s_step), _s_bin - 1);
-            int vi = min((int) floor(v/v_step), _v_bin - 1);
-            int i = (vi << (_h_bit + _s_bit)) + (si << _h_bit) + hi;
-            ++feature.at<float>(i);
-            ++count;
+            float rh = h / h_step;
+            float rs = s / s_step;
+            float rv = v / v_step;
+
+            int hi = (int) round(rh) - 1;
+            int si = (int) round(rs) - 1;
+            int vi = (int) round(rv) - 1;
+
+            for (int hh = hi; hh<hi+2; ++hh)
+            {
+                int ith = hh;
+                if (ith < 0) ith += _h_bin;
+                if (ith > _h_bin - 1) ith -= _h_bin;
+                float ph = (1.0 - fabs(rh - (hh + 0.5)));
+                feature.at<float>(_v_bin + _s_bin + ith) += ph;
+            }
+
+            for (int ss = si; ss<si+2; ++ss)
+            {
+                int its = ss;
+                if (its < 0) its += _s_bin;
+                if (its > _s_bin - 1) its -= _s_bin;
+                float ps = (1.0 - fabs(rs - (ss + 0.5)));
+                feature.at<float>(_v_bin + its) += ps;
+            }
+
+            for (int vv = vi; vv<vi+2; ++vv)
+            {
+                int itv = vv;
+                if (itv < 0) itv += _v_bin;
+                if (itv > _v_bin - 1) itv -= _v_bin;
+                float pv = (1.0 - fabs(rv - (vv + 0.5)));
+                feature.at<float>(itv) += pv;
+            }
         }
     }
-    for (int i=0; i < _dim; ++i)
-    {
-        feature.at<float>(i) /= count;
-    }
+
+    double s = sum(feature)[0];
+    feature = feature / s;
 }

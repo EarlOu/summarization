@@ -1,4 +1,4 @@
-#include "OnlineClusterMog.h"
+#include "algorithm/OnlineClusterMog.h"
 #include <math.h>
 #include <limits.h>
 #include <algorithm>

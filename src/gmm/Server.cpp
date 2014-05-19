@@ -32,7 +32,7 @@ void Server::run()
         index++;
     }
     closeShot(index);
-    vector<vector<vector<Shot> > > shots;
+    vector<vector<vector<Segment> > > shots;
 
     for (int i=0, n=_shots.size(); i<n; ++i)
     {
@@ -91,9 +91,7 @@ void Server::transmitFrame(const vector<bool>& selects, int index)
             int size = _shots[i].size();
             if (size == 0 || _shots[i][size - 1].end != 0)
             {
-                Shot s;
-                s.start = index;
-                s.end = 0;
+                Segment s(0, index, 0);
                 _shots[i].push_back(s);
             }
         }
@@ -112,7 +110,7 @@ void Server::createShotArray()
 {
     for (int i=0, n=_sensors.size(); i<n; ++i)
     {
-        _shots.push_back(vector<Shot>());
+        _shots.push_back(vector<Segment>());
     }
 }
 
@@ -126,7 +124,7 @@ void Server::closeShot(int index)
     }
 }
 
-void Server::write(vector<vector<vector<Shot> > >& shots)
+void Server::write(vector<vector<vector<Segment> > >& shots)
 {
     vector<int> indexes;
     int n = shots.size();
@@ -152,10 +150,10 @@ void Server::write(vector<vector<vector<Shot> > >& shots)
         }
         if (!done)
         {
-            vector<Shot>& ss = shots[firstShotIndex][indexes[firstShotIndex]];
+            vector<Segment>& ss = shots[firstShotIndex][indexes[firstShotIndex]];
             for (int i=0, m=ss.size(); i<m; ++i)
             {
-                Shot s = ss[i];
+                Segment s = ss[i];
                 // printf("Write Shot: %d %d %d\n", firstShotIndex, s.start, s.end);
                 _sensors[firstShotIndex].write(_writer, s);
             }
@@ -164,16 +162,16 @@ void Server::write(vector<vector<vector<Shot> > >& shots)
     }
 }
 
-void Server::postprocess(vector<vector<vector<Shot> > >& shots)
+void Server::postprocess(vector<vector<vector<Segment> > >& shots)
 {
     for (int i=0, n=_shots.size(); i<n; ++i)
     {
-        shots.push_back(vector<vector<Shot> >());
+        shots.push_back(vector<vector<Segment> >());
     }
     for (int i=0, n=_shots.size(); i<n; ++i)
     {
-        vector<Shot>& ss = _shots[i];
-        vector<vector<Shot> >& mergeShot = shots[i];
+        vector<Segment>& ss = _shots[i];
+        vector<vector<Segment> >& mergeShot = shots[i];
         for (int j=0, m=ss.size(); j<m; ++j)
         {
             if (mergeShot.size() != 0 && (ss[j].start - mergeShot.back().back().end) < 30)
@@ -182,7 +180,7 @@ void Server::postprocess(vector<vector<vector<Shot> > >& shots)
             }
             else
             {
-                vector<Shot> currShot;
+                vector<Segment> currShot;
                 currShot.push_back(ss[j]);
                 mergeShot.push_back(currShot);
             }

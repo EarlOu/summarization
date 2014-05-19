@@ -4,8 +4,8 @@
 #include <map>
 #include <utility>
 
-#include "FeatureExtractorLch.h"
-#include "FeatureExtractorCl.h"
+#include "algorithm/FeatureExtractorLch.h"
+#include "algorithm/FeatureExtractorCl.h"
 
 #define SHOT_LENGTH 30
 #define SUMMARY_RATE 0.05

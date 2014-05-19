@@ -1,4 +1,4 @@
-#include "FeatureDistanceNorm.h"
+#include "algorithm/FeatureDistanceNorm.h"
 
 double FeatureDistanceNorm::diff(InputArray feature1, InputArray feature2)
 {

@@ -1,5 +1,5 @@
-#include "common/util.hpp"
-#include "database/Dataset.hpp"
+#include "common/util.h"
+#include "database/Dataset.h"
 
 #include <opencv2/opencv.hpp>
 using namespace cv;

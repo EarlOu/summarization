@@ -1,9 +1,9 @@
-#include "FeatureExtractor.h"
-#include "FeatureExtractorLch3D.h"
-#include "FeatureExtractorLch.h"
-#include "FeatureExtractorEdge.h"
-#include "FeatureExtractorCl.h"
-#include "util.h"
+#include "algorithm/FeatureExtractor.h"
+#include "algorithm/FeatureExtractorLch3D.h"
+#include "algorithm/FeatureExtractorLch.h"
+#include "algorithm/FeatureExtractorEdge.h"
+#include "algorithm/FeatureExtractorCl.h"
+#include "algorithm/util.h"
 
 CV_INIT_ALGORITHM(FeatureExtractorLch3D, "FeatureDistance.LCH3D",
     obj.info()->addParam(obj, "h_bit", obj._h_bit);

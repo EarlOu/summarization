@@ -1,4 +1,4 @@
-#include "database/dataset.hpp"
+#include "database/dataset.h"
 #include <assert.h>
 #include <algorithm>
 using std::sort;

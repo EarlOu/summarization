@@ -1,7 +1,7 @@
-#include "OnlineCluster.h"
-#include "OnlineClusterBsas.h"
-#include "OnlineClusterMog.h"
-#include "util.h"
+#include "algorithm/OnlineCluster.h"
+#include "algorithm/OnlineClusterBsas.h"
+#include "algorithm/OnlineClusterMog.h"
+#include "algorithm/util.h"
 
 CV_INIT_ALGORITHM(OnlineClusterBsas, "OnlineCluster.BSAS",
     obj.info()->addParam(obj, "featureDiff", obj._featureDiff);
