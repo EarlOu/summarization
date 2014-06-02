@@ -30,7 +30,6 @@ private:
     int _K;
     double _alpha;
     vector<Cluster> _cluster;
-    Ptr<FeatureDistance> _featureDiff;
     double _T;
     double _INIT_SIGMA;
 
