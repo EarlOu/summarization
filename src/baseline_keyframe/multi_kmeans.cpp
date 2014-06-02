@@ -12,11 +12,13 @@ using namespace std;
 
 #include <iostream>
 
+#define FEATURE_DIM 256
+
 void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector<int> >& index);
 
 int main(int argc, char *argv[]) {
   if (argc != 5) {
-    printf("usage: %s <dataset> <feature set dir> <n> <output.txt>\n", argv[0]);
+    printf("usage: %s <dataset_dir> <feature_set_dir> <n> <output.txt>\n", argv[0]);
     return -1;
   }
 
@@ -25,7 +27,6 @@ int main(int argc, char *argv[]) {
   vector<vector<int> > fids;
   Dataset set(argv[1]);
   parseFeature(argv[2], set.getVideoInfo().size(), features, fids);
-  //vector<VideoInfo>& info = set.getVideoInfo();
   FILE *ofile = fopen(argv[4], "w");
   vector<int> all_fid;
   vector<int> all_vid;
@@ -85,8 +86,8 @@ void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector
     int i = 0;
     while (!finish) {
       finish = false;
-      Mat row(1, 256, CV_32FC1);
-      for (int i=0; i<256; ++i) {
+      Mat row(1, FEATURE_DIM, CV_32FC1);
+      for (int i=0; i<FEATURE_DIM; ++i) {
         double v;
         if (fscanf(file, "%lf", &v) != 1) {
           finish = true;
@@ -103,7 +104,7 @@ void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector
       ++i;
     }
     fclose(file);
-    Mat f(feature.size(), 256, CV_32FC1);
+    Mat f(feature.size(), FEATURE_DIM, CV_32FC1);
     for (size_t i=0; i<feature.size(); ++i) {
       feature[i].copyTo(f.row(i));
     }

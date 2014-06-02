@@ -4,7 +4,6 @@
 #include <map>
 #include <utility>
 
-#include "algorithm/FeatureExtractorLch.h"
 #include "algorithm/FeatureExtractorCl.h"
 
 #define SHOT_LENGTH 30

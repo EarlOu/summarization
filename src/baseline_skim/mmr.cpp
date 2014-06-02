@@ -25,7 +25,7 @@ float diff(Feature& f1, Feature& f2) {
 
 int main(int argc, char *argv[]) {
     if (argc != 4 && argc != 5) {
-        printf("usage: %s <dataset> <number_of_keyframe> <output.txt> [dist_table]\n", argv[0]);
+        printf("usage: %s <dataset_dir> <k> <output.txt> [dist_table]\n", argv[0]);
         return -1;
     }
     Dataset set(argv[1]);

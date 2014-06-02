@@ -10,7 +10,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   if (argc != 2 && argc != 3) {
-    printf("usage: %s <dataset> [scale]\n", argv[0]);
+    printf("usage: %s <dataset_dir> [scale]\n", argv[0]);
     return -1;
   }
   int scale = 1;

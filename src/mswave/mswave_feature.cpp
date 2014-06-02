@@ -6,17 +6,17 @@ using namespace cv;
 
 int main(int argc, char *argv[]) {
   if (argc != 3 && argc != 4) {
-    printf("usage: %s <video> <output.txt> [delay]\n", argv[0]);
+    printf("usage: %s <video> <output.txt> [offset]\n", argv[0]);
     return -1;
   }
 
-  int delay = 0;
+  int offset = 0;
   if (argc == 4) {
-    delay = atoi(argv[3]);
+    offset = atoi(argv[3]);
   }
 
   FILE* ofile = fopen(argv[2], "w");
-  for (int i=0; i<delay; ++i) {
+  for (int i=0; i<offset; ++i) {
     for (int j=0; j<256; ++j) fprintf(ofile, "%d ", 0);
     fprintf(ofile, "\n");
   }

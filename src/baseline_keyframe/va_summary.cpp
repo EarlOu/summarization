@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
-    printf("usage: %s <dataset> <score_dir> <output.txt>\n", argv[0]);
+    printf("usage: %s <dataset_dir> <score_dir> <output.txt>\n", argv[0]);
     return -1;
   }
 
