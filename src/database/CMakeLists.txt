@@ -1,1 +1,11 @@
 add_library(database Dataset.cpp)
+
+add_executable(eval_single_view_skim eval_single_view_skim.cpp)
+target_link_libraries(eval_single_view_skim common database)
+
+add_executable(eval_multi_view_keyframe eval_multi_view_keyframe.cpp)
+target_link_libraries(eval_multi_view_keyframe common database)
+
+add_executable(eval_multi_view_skim eval_multi_view_skim.cpp)
+target_link_libraries(eval_multi_view_skim common database)
+
