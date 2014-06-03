@@ -1,8 +1,5 @@
 #include  <opencv2/opencv.hpp>
-#include "algorithm/OnlineClusterBsas.h"
 #include "algorithm/OnlineClusterMog.h"
-#include "algorithm/FeatureDistanceNorm.h"
-#include "algorithm/FeatureDistanceConcatNorm.h"
 #include "algorithm/FeatureExtractor.h"
 #include "algorithm/FeatureExtractorLch.h"
 #include "algorithm/FeatureExtractorCl.h"
@@ -27,13 +24,7 @@ typedef struct {
 
 int main(int argc, char *argv[])
 {
-    initModule_OnlineCluster();
-    initModule_FeatureDistance();
-    initModule_FeatureExtractor();
-
     FileStorage fs("test.xml", FileStorage::WRITE);
-    OnlineClusterBsas bsas;
-    bsas.write(fs);
 
     if (argc != 2)
     {

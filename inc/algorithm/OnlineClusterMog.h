@@ -2,11 +2,8 @@
 #define ONLINE_CLUSTER_MOG
 
 #include "OnlineCluster.h"
-#include "FeatureDistance.h"
 
-class OnlineClusterMog : public OnlineCluster
-{
-
+class OnlineClusterMog : public OnlineCluster {
 public:
     // BL2
     OnlineClusterMog():_K(9), _alpha(0.004), _T(0.5), _INIT_SIGMA(0.2) {};
@@ -18,8 +15,7 @@ public:
     int getTrueBackground(InputArray iFeature);
     void getBackground(OutputArray back);
 private:
-    class Cluster
-    {
+    class Cluster {
     public:
         Mat mean;
         double sigma;
@@ -35,8 +31,7 @@ private:
 
     class ClusterComparator {
     public:
-        bool operator() (const Cluster& i, const Cluster& j)
-        {
+        bool operator() (const Cluster& i, const Cluster& j) {
             double l1 = i.weight / i.sigma;
             double l2 = j.weight / j.sigma;
             return l1 > l2;

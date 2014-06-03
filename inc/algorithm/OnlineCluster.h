@@ -5,13 +5,11 @@
 
 using namespace cv;
 
-class OnlineCluster:public Algorithm
-{
+class OnlineCluster {
 public:
     virtual int cluster(InputArray feature, OutputArray residue) = 0;
     virtual bool isBackground(int cluster) = 0;
     virtual void getCenter(int cluster, OutputArray center) = 0;
 };
 
-bool initModule_OnlineCluster();
 #endif

@@ -4,7 +4,6 @@
 #include <opencv2/opencv.hpp>
 #include "algorithm/OnlineClusterMog.h"
 #include "algorithm/FeatureExtractorCl.h"
-#include "algorithm/FeatureDistanceNorm.h"
 #include "common/Segment.h"
 
 using namespace cv;
@@ -38,6 +37,5 @@ private:
 
     FeatureExtractorCl _extractor;
     OnlineClusterMog _onlineCluster;
-    FeatureDistanceNorm _featureDistance;
 };
 #endif

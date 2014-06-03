@@ -4,10 +4,8 @@
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
-class FeatureExtractor : public Algorithm
-{
+class FeatureExtractor {
 public:
     virtual void extract(InputArray frame, OutputArray feature) = 0;
 };
-bool initModule_FeatureExtractor();
 #endif

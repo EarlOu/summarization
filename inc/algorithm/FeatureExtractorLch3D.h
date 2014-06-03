@@ -7,8 +7,7 @@
  * Local Color Histogram (LCH) extractor
  */
 
-class FeatureExtractorLch3D : public FeatureExtractor
-{
+class FeatureExtractorLch3D : public FeatureExtractor {
 public:
     FeatureExtractorLch3D():
         _h_bit(4),

@@ -7,8 +7,7 @@
  * Color Layout Descriptor
  */
 
-class FeatureExtractorCl : public FeatureExtractor
-{
+class FeatureExtractorCl : public FeatureExtractor {
 public:
     FeatureExtractorCl():_block_count(8) {}
 

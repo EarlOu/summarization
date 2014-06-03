@@ -38,8 +38,7 @@ void FeatureExtractorLch3D::extract(InputArray iFrame, OutputArray oFeature) {
     }
 }
 
-void FeatureExtractorLch3D::extractBlockHist(InputArray iBlock, OutputArray oFeature)
-{
+void FeatureExtractorLch3D::extractBlockHist(InputArray iBlock, OutputArray oFeature) {
     const static float MAX_H = 180.0f;
     const static float MAX_S = 255.0f;
     const static float MAX_V = 255.0f;
@@ -57,11 +56,9 @@ void FeatureExtractorLch3D::extractBlockHist(InputArray iBlock, OutputArray oFea
     Mat feature = oFeature.getMat();
     feature.setTo(0);
 
-    for (int y=0; y<h; ++y)
-    {
+    for (int y=0; y<h; ++y) {
         unsigned char* ptr = block.ptr<unsigned char>(y);
-        for (int x=0; x<w; ++x)
-        {
+        for (int x=0; x<w; ++x) {
             int xx =  3 * x;
             unsigned char h = ptr[xx];
             unsigned char s = ptr[xx + 1];
@@ -75,8 +72,7 @@ void FeatureExtractorLch3D::extractBlockHist(InputArray iBlock, OutputArray oFea
             ++count;
         }
     }
-    for (int i=0; i < _dim; ++i)
-    {
+    for (int i=0; i < _dim; ++i) {
         feature.at<float>(i) /= count;
     }
 }

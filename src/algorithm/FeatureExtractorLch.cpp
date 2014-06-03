@@ -38,8 +38,7 @@ void FeatureExtractorLch::extract(InputArray iFrame, OutputArray oFeature) {
     }
 }
 
-void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeature)
-{
+void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeature) {
     const static float MAX_H = 180.0f;
     const static float MAX_S = 255.0f;
     const static float MAX_V = 255.0f;
@@ -57,11 +56,9 @@ void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeatu
     Mat feature = oFeature.getMat();
     feature.setTo(0);
 
-    for (int y=0; y<h; ++y)
-    {
+    for (int y=0; y<h; ++y) {
         unsigned char* ptr = block.ptr<unsigned char>(y);
-        for (int x=0; x<w; ++x)
-        {
+        for (int x=0; x<w; ++x) {
             int xx =  3 * x;
             float h = ptr[xx];
             float s = ptr[xx + 1];
@@ -75,8 +72,7 @@ void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeatu
             int si = (int) round(rs) - 1;
             int vi = (int) round(rv) - 1;
 
-            for (int hh = hi; hh<hi+2; ++hh)
-            {
+            for (int hh = hi; hh<hi+2; ++hh) {
                 int ith = hh;
                 if (ith < 0) ith += _h_bin;
                 if (ith > _h_bin - 1) ith -= _h_bin;
@@ -84,8 +80,7 @@ void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeatu
                 feature.at<float>(_v_bin + _s_bin + ith) += ph;
             }
 
-            for (int ss = si; ss<si+2; ++ss)
-            {
+            for (int ss = si; ss<si+2; ++ss) {
                 int its = ss;
                 if (its < 0) its += _s_bin;
                 if (its > _s_bin - 1) its -= _s_bin;
@@ -93,8 +88,7 @@ void FeatureExtractorLch::extractBlockHist(InputArray iBlock, OutputArray oFeatu
                 feature.at<float>(_v_bin + its) += ps;
             }
 
-            for (int vv = vi; vv<vi+2; ++vv)
-            {
+            for (int vv = vi; vv<vi+2; ++vv) {
                 int itv = vv;
                 if (itv < 0) itv += _v_bin;
                 if (itv > _v_bin - 1) itv -= _v_bin;
