@@ -3,9 +3,9 @@
 #include <time.h>
 #include <opencv2/opencv.hpp>
 #include <vector>
-#include "util.h"
-#include "Server.h"
-#include "VideoSensor.h"
+#include "gmm/util.h"
+#include "gmm/Server.h"
+#include "gmm/VideoSensor.h"
 #include "database/Dataset.h"
 
 using namespace cv;

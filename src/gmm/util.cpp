@@ -1,4 +1,4 @@
-#include "util.h"
+#include "gmm/util.h"
 
 #include <stdio.h>
 #include <math.h>

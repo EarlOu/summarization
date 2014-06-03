@@ -1,4 +1,4 @@
-#include "VideoSensor.h"
+#include "gmm/VideoSensor.h"
 #include <stdlib.h>
 
 //#define PACKAGE_LOST
