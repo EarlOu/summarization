@@ -9,8 +9,8 @@
 #define SHOT_LENGTH 30
 #define SUMMARY_RATE 0.05
 //#define SUMMARY_RATE 0.1
-//#define D 30
-#define D 90
+#define D 30
+//#define D 90
 #define PRUNE_SIZE 1000
 
 using namespace cv;
@@ -235,10 +235,13 @@ void updateRoot(Node* newRoot, deque<deque<double> >& dists) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("usage: %s <video>\n", argv[0]);
+    printf("Single-view skimming using tree based method:\n");
+    printf("V. Valdes et at. Binary Tree Based On-Line Video Summarization, TRECVID 2008\n");
+    if (argc != 3) {
+        printf("usage: %s <video> <output.txt>\n", argv[0]);
         return -1;
     }
+    FILE* ofile = fopen(argv[2], "w");
     VideoCapture cap(argv[1]);
 
     Mat frame;
@@ -264,7 +267,9 @@ int main(int argc, char *argv[]) {
     int width = cap.get(CV_CAP_PROP_FRAME_WIDTH);
     int height = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
     VideoWriter writer("output.avi", CV_FOURCC('M', 'P', 'E', 'G'), 30, Size(width, height));
-    int index = 1;
+    int delay_idx = 0;
+    bool shot_start = false;
+    int shot_start_idx = 0;
     while (readShot(cap, curr_shot)) {
         // Read a new shot and extract feature
         shots.push_back(curr_shot);
@@ -329,15 +334,20 @@ int main(int argc, char *argv[]) {
             }
             root = newRoot;
             if (newRoot->select) {
+                if (!shot_start) {
+                    shot_start_idx = delay_idx;
+                    shot_start = true;
+                }
                 for (int j=0, k=shots[0].size(); j<k; ++j) {
                     writer.write(shots[0][j]);
-                    printf("%d\n", 1);
                 }
             } else {
-                for (int j=0, k=shots[0].size(); j<k; ++j) {
-                    printf("%d\n", 0);
+                if (shot_start) {
+                    shot_start = false;
+                    fprintf(ofile, "%d %d\n", shot_start_idx, delay_idx + (int) shots[0].size());
                 }
             }
+            delay_idx += shots[0].size();
             updateRoot(newRoot, distances);
             features.pop_front();
             distances.pop_front();
@@ -376,17 +386,27 @@ int main(int argc, char *argv[]) {
         if (stack.back()->select) {
             for (int j=0, k=shots[0].size(); j<k; ++j) {
                 writer.write(shots[0][j]);
-                printf("%d\n", 1);
+            }
+            if (!shot_start) {
+                shot_start_idx = delay_idx;
+                shot_start = true;
             }
         } else {
-            for (int j=0, k=shots[0].size(); j<k; ++j) {
-                printf("%d\n", 0);
+            if (shot_start) {
+                shot_start = false;
+                fprintf(ofile, "%d %d\n", shot_start_idx, delay_idx + (int) shots[0].size());
             }
         }
+        delay_idx += shots[0].size();
         shots.pop_front();
         features.pop_front();
         stack.pop_back();
     }
+    if (shot_start) {
+        shot_start = false;
+        fprintf(ofile, "%d %d\n", shot_start_idx, delay_idx);
+    }
+    fclose(ofile);
 }
 
 bool readShot(VideoCapture& cap, Shot& shot) {

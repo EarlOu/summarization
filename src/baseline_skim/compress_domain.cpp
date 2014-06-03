@@ -44,10 +44,14 @@ double shotScore(Mat features[]) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("usage: %s <video>\n", argv[0]);
+    printf("Single-view skimming using compress domain method:\n");
+    printf("J. Almeida et al. Online video summarization on compressed domain, JVCIP 2012\n");
+    if (argc != 3) {
+        printf("usage: %s <video> <output.txt>\n", argv[0]);
         return -1;
     }
+
+    FILE* ofile = fopen(argv[2], "w");
 
     VideoCapture cap(argv[1]);
     if (!cap.isOpened()) {
@@ -161,17 +165,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    int j = 0;
-    for (int i=0; i<total; ++i) {
-        bool selected = false;
-        if (i >= result[j].start) {
-            selected = true;
-        }
-        if (i >= result[j].end) {
-            selected = false;
-            if (j < result.size() - 1) j++;
-        }
-        printf("%d\n", selected ? 1 : 0);
+    for (int i=0, n=result.size(); i<n; ++i) {
+        fprintf(ofile, "%d %d\n", result[i].start, result[i].end);
     }
-
+    fclose(ofile);
 }
