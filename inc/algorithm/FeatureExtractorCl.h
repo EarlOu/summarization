@@ -9,11 +9,8 @@
 
 class FeatureExtractorCl : public FeatureExtractor {
 public:
-    FeatureExtractorCl():_block_count(8) {}
-
+    FeatureExtractorCl(int n_block = 8):_block_count(n_block) {}
     void extract(InputArray frame, OutputArray feature);
-    AlgorithmInfo* info() const;
-
 private:
     int _block_count;
 };

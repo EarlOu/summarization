@@ -61,9 +61,9 @@ bool VideoSensor::next(OutputArray oFrame, OutputArray oFeature, double& score)
         split(hsvFrame, hsv);
         Mat hFrame = hsv[0];
 
-        calcHist(&hFrame, 1, 0, mask, _feature, 1, &histSize, &histRange, true, false);
-        oFeature.create(_feature.size(), _feature.type());
-        _feature.copyTo(oFeature.getMat());
+        calcHist(&hFrame, 1, 0, mask, oFeature, 1, &histSize, &histRange, true, false);
+        _feature = oFeature.getMat().clone();
+
         absdiff(feature, backFeature, residue);
         Scalar s = sum(residue);
         _score = s[0] + s[1] + s[2];

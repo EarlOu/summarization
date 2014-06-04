@@ -22,10 +22,7 @@ typedef struct {
   int end;
 } Segment;
 
-int main(int argc, char *argv[])
-{
-    FileStorage fs("test.xml", FileStorage::WRITE);
-
+int main(int argc, char *argv[]) {
     if (argc != 2)
     {
         printf("usage: %s <input_video>\n", argv[0]);
@@ -114,7 +111,7 @@ int main(int argc, char *argv[])
         imshow("image", frame);
 #endif
         // printf("Frame %d/%d\n", index, totalFrame);
-        printf("%d\n", chose ? 1 : 0);
+        // printf("%d\n", chose ? 1 : 0);
         if (chose)
         {
           writer.write(frame);
@@ -150,7 +147,7 @@ int main(int argc, char *argv[])
     }
 
     for (int i=0, n=segments.size(); i<n; ++i) {
-      // printf("%d %d %d\n", video_id, segments[i].start, segments[i].end);
+       printf("%d %d\n", segments[i].start, segments[i].end);
     }
     writer.release();
 }
