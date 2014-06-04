@@ -1,5 +1,5 @@
 #include  <opencv2/opencv.hpp>
-#include "algorithm/OnlineClusterMog.h"
+#include "gmm/OnlineClusterMog.h"
 #include "algorithm/FeatureExtractor.h"
 #include "algorithm/FeatureExtractorLch.h"
 #include "algorithm/FeatureExtractorCl.h"

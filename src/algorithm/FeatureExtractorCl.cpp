@@ -13,17 +13,20 @@ void FeatureExtractorCl::extract(InputArray iFrame, OutputArray oFeature) {
     int w = f.size().width;
     int h = f.size().height;
 
-    int block_width = w / _block_count;
-    int block_height = h / _block_count;
+    int w_step = w / _block_count;
+    int h_step = h / _block_count;
+    int crop_w = w_step * _block_count;
+    int crop_h = h_step * _block_count;
 
-    for (int y=0; y<_block_count; y++) {
-        for (int x=0; x<_block_count; x++) {
-            Scalar s = mean(f.colRange(x * block_width, x * block_width + block_width).
-                    rowRange(y * block_height, y * block_height + block_height));
-            int index = (x + y * _block_count) * 3;
+    int index = 0;
+    for (int y=0; y<crop_h; y+=h_step) {
+        for (int x=0; x<crop_w; x+=w_step) {
+            Scalar s = mean(f.colRange(x, x + w_step).
+                    rowRange(y, y + h_step));
             feature.at<float>(index + 0) = float((int) round(s[0])) / 255;
             feature.at<float>(index + 1) = float((int) round(s[1])) / 255;
             feature.at<float>(index + 2) = float((int) round(s[2])) / 255;
+            index += 3;
         }
     }
 }

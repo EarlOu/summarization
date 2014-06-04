@@ -2,7 +2,7 @@
 #define VIDEO_SENSOR_H
 
 #include <opencv2/opencv.hpp>
-#include "algorithm/OnlineClusterMog.h"
+#include "gmm/OnlineClusterMog.h"
 #include "algorithm/FeatureExtractorCl.h"
 #include "common/Segment.h"
 

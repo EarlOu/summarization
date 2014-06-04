@@ -1,6 +1,6 @@
 #include "gmm/Sensor.h"
 #include "algorithm/FeatureExtractorCl.h"
-#include "algorithm/OnlineClusterMog.h"
+#include "gmm/OnlineClusterMog.h"
 #include <sys/time.h>
 #include <opencv2/opencv.hpp>
 using namespace cv;

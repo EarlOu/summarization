@@ -1,4 +1,4 @@
-#include "algorithm/OnlineClusterBsas.h"
+#include "gmm/OnlineClusterBsas.h"
 #include <limits.h>
 #include <math.h>
 

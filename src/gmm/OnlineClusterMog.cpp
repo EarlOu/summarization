@@ -1,4 +1,4 @@
-#include "algorithm/OnlineClusterMog.h"
+#include "gmm/OnlineClusterMog.h"
 #include <math.h>
 #include <limits.h>
 #include <algorithm>
@@ -108,6 +108,7 @@ bool OnlineClusterMog::isBackground(int cluster) {
     return false;
 }
 
+// Get background cluster by comparing the ratio of w/sigma
 void OnlineClusterMog::getBackground(OutputArray back)
 {
     vector<Cluster> c = _cluster;
@@ -121,6 +122,7 @@ void OnlineClusterMog::getBackground(OutputArray back)
     c[0].mean.copyTo(b);
 }
 
+// Get background cluster by finding the closest non summary cluster
 int OnlineClusterMog::getTrueBackground(InputArray iFeature) {
     Mat feature = iFeature.getMat();
     vector<Cluster> c = _cluster;
