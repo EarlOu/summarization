@@ -8,28 +8,20 @@ using namespace cv;
 
 class IntraStageSimulateSensor:public Sensor {
 public:
-    IntraStageSimulateSensor(VideoCapture & cap)
-            :Sensor(false), _cap(cap), _skim_start(false), _skim_start_idx(0), _last_received_idx(0) {}
+    IntraStageSimulateSensor()
+            :Sensor(true), _skim_start(false), _skim_start_idx(0), _last_received_idx(0) {}
 
     void finish() {
+        Sensor::finish();
         if (_skim_start) {
             printf("%d %d\n", _skim_start_idx, _last_received_idx + 1);
         }
     }
 
 private:
-    VideoCapture & _cap;
-
     bool _skim_start;
     int _skim_start_idx;
     int _last_received_idx;
-
-    virtual bool read(Mat& frame, size_t & time) {
-        static size_t read_idx = 0;
-        time = read_idx * FPS;
-        read_idx++;
-        return _cap.read(frame);
-    }
 
     virtual void sendFrame(InputArray frame, int idx) {
         assert(idx > _last_received_idx);
@@ -45,7 +37,7 @@ private:
         _last_received_idx = idx;
     }
 
-    virtual void obtainReceivedFeature(vector<ReceivedFeature>& features) {}
+    virtual void obtainReceivedFeature(list<ReceivedFeature>& features) {}
 };
 
 int main(int argc, char *argv[]) {
@@ -53,8 +45,16 @@ int main(int argc, char *argv[]) {
         printf("usage: %s <input_video>\n", argv[0]);
         return -1;
     }
+
     VideoCapture cap(argv[1]);
-    IntraStageSimulateSensor sensor(cap);
-    sensor.run();
+    IntraStageSimulateSensor sensor;
+    list<ReceivedFeature> features;
+
+    Mat frame;
+    size_t time = 0;
+    while (cap.read(frame)) {
+        sensor.next(frame, time, features);
+        time += FPS;
+    }
     sensor.finish();
 }

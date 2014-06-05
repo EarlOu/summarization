@@ -10,5 +10,5 @@ target_link_libraries(gmm_multi_view ${OpenCV_LIBS} algorithm common database gm
 add_library(gmm Sensor.cpp OnlineClusterMog.cpp)
 target_link_libraries(gmm algorithm ${OpenCV_LIBS})
 
-add_executable(gmm_single_view2 single_view2.cpp)
-target_link_libraries(gmm_single_view2 gmm ${OpenCV_LIBS})
+add_executable(gmm_intra_view gmm_intra_view.cpp)
+target_link_libraries(gmm_intra_view gmm ${OpenCV_LIBS})

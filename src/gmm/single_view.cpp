@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
         short k = waitKey(10);
         if (k == ' ') waitKey();
 #endif
-    }
+  }
     if (lastSegment.start != -1) {
       lastSegment.end = index;
       segments.push_back(lastSegment);

@@ -1,12 +1,16 @@
 #include "gmm/Sensor.h"
-#include "algorithm/FeatureExtractorCl.h"
 #include "gmm/OnlineClusterMog.h"
+#include "algorithm/FeatureExtractorCl.h"
+
+#include <stdlib.h>
 #include <sys/time.h>
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
 #define N_BLOCK 8
 #define BUFFER_TIME 3000 // 3 seconds buffer time for network delay
+#define FEATURE_MATCH_TIME_TH 15
+#define FEATURE_MATCH_TH 0.7
 
 static inline size_t gettime() {
     static struct timeval tv;
@@ -67,56 +71,60 @@ static void extractIntraStageFeature(
     score = s[0] + s[1] + s[2];
 }
 
-void Sensor::run() {
-    Mat frame;
-    FeatureExtractorCl featureExtractor(N_BLOCK);
-    OnlineClusterMog onlineCluster;
+void Sensor::next(cv::InputArray iFrame, size_t time, list<ReceivedFeature>& features) {
+    Mat frame = iFrame.getMat();
 
-    int idx = 0;
-    size_t time;
-    while (read(frame, time)) {
-        if (frame.empty()) continue;
+    // intra stage
+    Mat feature;
+    Mat residue;
+    _featureExtractor.extract(frame, feature);
+    int c = _onlineCluster.cluster(feature, residue);
+    bool choose = !_onlineCluster.isBackground(c);
 
-        // intra stage
-        Mat feature;
-        Mat residue;
-        featureExtractor.extract(frame, feature);
-        int c = onlineCluster.cluster(feature, residue);
-        bool choose = !onlineCluster.isBackground(c);
+    if (INTRA_ONLY) {
+        if (choose) {
+            sendFrame(frame, _idx);
+        }
+    } else {
+        //inter stage
+        if (choose) {
+            Mat background;
+            Mat intraFeature;
+            float score;
+            _onlineCluster.getBackground(background);
+            extractIntraStageFeature(frame, feature, background, intraFeature, score);
+            _buf.push_back(BufferedFeature(intraFeature, score, time, frame, _idx));
+        }
 
-        if (_inter_stage) {
-            //inter stage
-            if (choose) {
-                Mat background;
-                Mat intraFeature;
-                float score;
-                onlineCluster.getBackground(background);
-                extractIntraStageFeature(frame, feature, background, intraFeature, score);
-                _buf.push_back(BufferedFrame(frame, intraFeature, score, idx, time));
-            }
-
-            // vector<ReceivedFeature> features;
-            // receiveFeature(features) {
-            // }
-
-            // send frame with no match
-            for (list<BufferedFrame>::iterator it = _buf.begin(); it != _buf.end(); it++) {
-                if (time - it->time > BUFFER_TIME) {
-                    sendFrame(it->frame, it->idx);
-                    _buf.erase(it);
+        for (list<ReceivedFeature>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
+            for (list<BufferedFeature>::iterator it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
+                if (abs(it_r->time - it_b->time) < FEATURE_MATCH_TIME_TH
+                        && it_r->score > it_b->score
+                        && compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA) < FEATURE_MATCH_TH) {
+                    _buf.erase(it_b);
                 }
             }
-        } else {
-            if (choose) {
-                sendFrame(frame, idx);
+        }
+
+        // send frame with no match
+        for (list<BufferedFeature>::iterator it = _buf.begin(); it != _buf.end(); it++) {
+            if (time - it->time > BUFFER_TIME) {
+                sendFrame(it->frame, it->idx);
+                _buf.erase(it);
             }
         }
-        frame = Mat();
-        idx++;
     }
+    _idx++;
+    return;
+}
 
-    // loop finish, send all remaining frames in the buffer
-    for (list<BufferedFrame>::iterator it = _buf.begin(); it != _buf.end(); it++) {
-        sendFrame(it->frame, it->idx);
+void Sensor::finish() {
+    if (INTRA_ONLY) {
+        return;
+    } else {
+        // loop finish, send all remaining frames in the buffer
+        for (list<BufferedFeature>::iterator it = _buf.begin(); it != _buf.end(); it++) {
+            sendFrame(it->frame, it->idx);
+        }
     }
 }
