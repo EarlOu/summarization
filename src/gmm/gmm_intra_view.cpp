@@ -1,29 +1,18 @@
 #include "gmm/Sensor.h"
+#include "gmm/Sender.h"
 
 #include <assert.h>
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
 #define FPS 30
+#define MINI_SEC_PER_FRAME 33
 
-class IntraStageSimulateSensor:public Sensor {
+class IntraSimulateSender: public Sender {
 public:
-    IntraStageSimulateSensor()
-            :Sensor(true), _skim_start(false), _skim_start_idx(0), _last_received_idx(0) {}
+    IntraSimulateSender(): _skim_start(false), _skim_start_idx(0), _last_received_idx(0) {}
 
-    void finish() {
-        Sensor::finish();
-        if (_skim_start) {
-            printf("%d %d\n", _skim_start_idx, _last_received_idx + 1);
-        }
-    }
-
-private:
-    bool _skim_start;
-    int _skim_start_idx;
-    int _last_received_idx;
-
-    virtual void sendFrame(InputArray frame, int idx) {
+    virtual void sendFrame(InputArray frame, size_t time, int idx) {
         assert(idx > _last_received_idx);
         if (_skim_start) {
             if (idx != _last_received_idx + 1) { // the shot is break
@@ -37,8 +26,19 @@ private:
         _last_received_idx = idx;
     }
 
-    virtual void obtainReceivedFeature(list<ReceivedFeature>& features) {}
+    virtual void sendFeature(InputArray iFeature, double score, size_t time, int idx) {}
+
+    void finish() {
+        if (_skim_start) {
+            printf("%d %d\n", _skim_start_idx, _last_received_idx + 1);
+        }
+    }
+private:
+    bool _skim_start;
+    int _skim_start_idx;
+    int _last_received_idx;
 };
+
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -47,14 +47,18 @@ int main(int argc, char *argv[]) {
     }
 
     VideoCapture cap(argv[1]);
-    IntraStageSimulateSensor sensor;
-    list<ReceivedFeature> features;
+    IntraSimulateSender sender;
+    Sensor sensor(&sender, true);
 
+    list<ReceivedFeature> features;
     Mat frame;
+    int idx = 0;
     size_t time = 0;
     while (cap.read(frame)) {
-        sensor.next(frame, time, features);
+        sensor.next(idx, frame, time, features);
+        idx++;
         time += FPS;
     }
     sensor.finish();
+    sender.finish();
 }

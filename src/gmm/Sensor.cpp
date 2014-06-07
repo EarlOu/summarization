@@ -9,18 +9,12 @@ using namespace cv;
 
 #define N_BLOCK 8
 #define BUFFER_TIME 3000 // 3 seconds buffer time for network delay
-#define FEATURE_MATCH_TIME_TH 15
+#define FEATURE_MATCH_TIME_TH 10
 #define FEATURE_MATCH_TH 0.7
-
-static inline size_t gettime() {
-    static struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
-}
 
 static void extractIntraStageFeature(
         InputArray iFrame, InputArray iFeature, InputArray iBackground,
-        OutputArray oFeature, float & score) {
+        OutputArray oFeature, double & score) {
 
     Mat frame = iFrame.getMat();
     Mat feature = iFeature.getMat();
@@ -71,60 +65,63 @@ static void extractIntraStageFeature(
     score = s[0] + s[1] + s[2];
 }
 
-void Sensor::next(cv::InputArray iFrame, size_t time, list<ReceivedFeature>& features) {
+void Sensor::next(int idx, cv::InputArray iFrame, size_t time, list<ReceivedFeature>& features) {
     Mat frame = iFrame.getMat();
 
     // intra stage
+    bool choose = false;
     Mat feature;
     Mat residue;
-    _featureExtractor.extract(frame, feature);
-    int c = _onlineCluster.cluster(feature, residue);
-    bool choose = !_onlineCluster.isBackground(c);
+    if (!frame.empty()) {
+        _featureExtractor.extract(frame, feature);
+        int c = _onlineCluster.cluster(feature, residue);
+        choose = !_onlineCluster.isBackground(c);
+    }
 
     if (INTRA_ONLY) {
         if (choose) {
-            sendFrame(frame, _idx);
+            _sender->sendFrame(frame, time, idx);
         }
-    } else {
-        //inter stage
-        if (choose) {
-            Mat background;
-            Mat intraFeature;
-            float score;
-            _onlineCluster.getBackground(background);
-            extractIntraStageFeature(frame, feature, background, intraFeature, score);
-            _buf.push_back(BufferedFeature(intraFeature, score, time, frame, _idx));
-        }
+        return;
+    }
 
-        for (list<ReceivedFeature>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
-            for (list<BufferedFeature>::iterator it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
-                if (abs(it_r->time - it_b->time) < FEATURE_MATCH_TIME_TH
-                        && it_r->score > it_b->score
-                        && compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA) < FEATURE_MATCH_TH) {
-                    _buf.erase(it_b);
-                }
-            }
-        }
+    //inter stage
+    if (choose) {
+        Mat background;
+        Mat intraFeature;
+        double score;
+        _onlineCluster.getBackground(background);
+        extractIntraStageFeature(frame, feature, background, intraFeature, score);
+        _buf.push_back(BufferedFeature(intraFeature, score, time, frame, idx));
+        _sender->sendFeature(intraFeature, score, time, idx);
+    }
 
-        // send frame with no match
-        for (list<BufferedFeature>::iterator it = _buf.begin(); it != _buf.end(); it++) {
-            if (time - it->time > BUFFER_TIME) {
-                sendFrame(it->frame, it->idx);
-                _buf.erase(it);
-            }
+    // match frames in the buffer
+    for (list<ReceivedFeature>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
+        list<BufferedFeature>::iterator it_b;
+        for (it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
+            if (abs(it_r->time - it_b->time) < FEATURE_MATCH_TIME_TH) break;
+        }
+        if (it_b != _buf.end()
+                && it_r->score > it_b->score
+                && compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA) < FEATURE_MATCH_TH) {
+            _buf.erase(it_b);
         }
     }
-    _idx++;
+
+    // send no matching frames
+    while (!_buf.empty() && time - _buf.front().time > BUFFER_TIME) {
+        _sender->sendFrame(_buf.front().frame, _buf.front().time, _buf.front().idx);
+        _buf.pop_front();
+    }
     return;
 }
 
 void Sensor::finish() {
-    if (INTRA_ONLY) {
-        return;
-    } else {
-        // loop finish, send all remaining frames in the buffer
+    if (!INTRA_ONLY) {
+        // Send all remaining frames in the buffer
         for (list<BufferedFeature>::iterator it = _buf.begin(); it != _buf.end(); it++) {
-            sendFrame(it->frame, it->idx);
+            _sender->sendFrame(it->frame, it->time, it->idx);
         }
     }
 }
