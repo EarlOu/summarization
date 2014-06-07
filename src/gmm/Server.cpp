@@ -64,15 +64,16 @@ void Server::nextSelection(vector<bool>& selects)
         selects.push_back(select);
     }
 
+    vector<bool> intra = selects;
     for (int i=0; i<n; ++i)
     {
-        if (selects[i])
+        if (intra[i])
         {
             vector<Mat> recvFeatures;
             vector<double> recvScores;
             for (int j=0; j<n; ++j)
             {
-                if (i==j || !selects[j]) continue;
+                if (i==j || !intra[j]) continue;
                 recvFeatures.push_back(features[j]);
                 recvScores.push_back(scores[j]);
             }
