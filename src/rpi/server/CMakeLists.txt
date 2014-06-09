@@ -1,2 +1,2 @@
 add_executable(rpi_server EXCLUDE_FROM_ALL server.cpp)
-target_link_libraries(rpi_server)
+target_link_libraries(rpi_server rpi_common)

@@ -1,10 +1,10 @@
+#include "rpi/common/Common.h"
+#include "rpi/common/NetUtil.h"
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 // #include "gmm/Sensor.h"
 // #include "gmm/Sender.h"
@@ -38,34 +38,25 @@
 
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("usage: %s <server ip> <server port>\n", argv[0]);
+    if (argc != 2) {
+        printf("usage: %s <server ip>\n", argv[0]);
         return -1;
     }
 
-    int port = atoi(argv[2]);
-
-    int sockfd;
-    int sockoptval = 1;
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("Failed to open socket");
-        exit(EXIT_FAILURE);
-    }
-
-    sockaddr_in serveraddr;
-    memset((void*) &serveraddr, 0, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_port = htons(port);
-    if (inet_aton(argv[1], &(serveraddr.sin_addr)) < 0) {
+    sockaddr_in addr;
+    if (inet_aton(argv[1], (struct in_addr*) &addr) < 0) {
         printf("Incorrect IP address: %s\n", argv[1]);
         return -1;
     }
 
-    if (connect(sockfd, (struct sockaddr*) &serveraddr, sizeof(serveraddr)) < 0) {
-        perror("Failed to connect");
-        exit(EXIT_FAILURE);
-    }
+    int fd_msg = connect_to(addr.sin_addr.s_addr, PORT);
+    printf("Successfully connect to server, fd=%d\n", fd_msg);
 
+    int fd_feature = listen_single_connect(PORT_FEATURE);
+    printf("Successfully create feature channel, fd=%d\n", fd_feature);
+
+    int fd_video = listen_single_connect(PORT_VIDEO);
+    printf("Successfully create feature channel, fd=%d\n", fd_video);
 
 //     const int width = 320;
 //     const int height = 240;
