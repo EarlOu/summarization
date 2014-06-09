@@ -37,6 +37,10 @@ private:
     FeatureExtractorCl _featureExtractor;
     OnlineClusterMog _onlineCluster;
     list<BufferedFeature> _buf;
+
+    // disable default copy constructor and assign operator
+    Sensor(const Sensor&) {}
+    void operator=(const Sensor&) {}
 };
 
 #endif
