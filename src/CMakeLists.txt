@@ -9,4 +9,6 @@ add_subdirectory(baseline_skim)
 add_subdirectory(mswave)
 add_subdirectory(gmm)
 
+add_subdirectory(rpi)
+
 add_subdirectory(test)
