@@ -22,7 +22,6 @@ public:
     bool isMatched(InputArray feature, int cluster);
     int getHistCount(int cluster);
     double diff(InputArray feature, int cluster);
-    AlgorithmInfo* info() const;
 private:
     double _diffTh;
     double _learningRate;

@@ -1,6 +1,8 @@
 #include <opencv2/opencv.hpp>
-#include <math.h>
 using namespace cv;
+
+#include <math.h>
+#include <stdio.h>
 
 // #define SHOW_VIDEO
 

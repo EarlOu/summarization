@@ -159,5 +159,6 @@ int OnlineClusterMog::getTrueBackground(InputArray iFeature) {
 void OnlineClusterMog::getCenter(int cluster, OutputArray oCenter) {
     Mat center = _cluster[cluster].mean;
     oCenter.create(center.size(), center.type());
-    center.copyTo(oCenter.getMat());
+    Mat output = oCenter.getMat();
+    center.copyTo(output);
 }

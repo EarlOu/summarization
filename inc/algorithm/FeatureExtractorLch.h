@@ -17,7 +17,6 @@ public:
         _num_block_y(2) {}
 
     void extract(InputArray frame, OutputArray feature);
-    AlgorithmInfo* info() const;
 private:
     void extractBlockHist(InputArray block, OutputArray feature);
 

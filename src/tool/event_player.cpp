@@ -3,6 +3,8 @@
 #include "database/Dataset.h"
 #include "common/Segment.h"
 
+#include <stdio.h>
+
 #include <opencv2/opencv.hpp>
 using namespace cv;
 

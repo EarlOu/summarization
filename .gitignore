@@ -1,4 +1,5 @@
 build
+*.swp
 *.mp4
 *.avi
 *.yuv

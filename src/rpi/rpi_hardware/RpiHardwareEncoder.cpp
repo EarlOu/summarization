@@ -1,4 +1,4 @@
-#include "rpi/RpiHardwareEncoder.h"
+#include "rpi/rpi_hardware/RpiHardwareEncoder.h"
 
 #include <string>
 using std::string;

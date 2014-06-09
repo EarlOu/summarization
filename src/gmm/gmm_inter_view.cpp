@@ -3,6 +3,7 @@
 #include "database/Dataset.h"
 #include "common/util.h"
 
+#include <stdio.h>
 #include <assert.h>
 #include <algorithm>
 #include <opencv2/opencv.hpp>

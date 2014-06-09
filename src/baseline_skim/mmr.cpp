@@ -1,6 +1,7 @@
 #include "database/Dataset.h"
 #include "common/Keyframe.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <vector>
 #include <list>

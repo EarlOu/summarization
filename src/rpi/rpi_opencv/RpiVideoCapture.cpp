@@ -1,4 +1,4 @@
-#include "rpi_opencv/RpiVideoCapture.h"
+#include "rpi/rpi_opencv/RpiVideoCapture.h"
 
 #include <opencv2/opencv.hpp>
 #include <inttypes.h>

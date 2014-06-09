@@ -1,4 +1,4 @@
-#include "rpi/RpiCamReader.h"
+#include "rpi/rpi_hardware/RpiCamReader.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -5,8 +5,8 @@
 using namespace std;
 
 struct VideoInfo {
-    const int offset;
-    const string path;
+    int offset;
+    string path;
 
     VideoInfo(const string& _path, int _offset):
         path(_path), offset(_offset) {}

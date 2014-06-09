@@ -88,13 +88,13 @@ void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector
         while (!finish) {
             finish = false;
             Mat row(1, FEATURE_DIM, CV_32FC1);
-            for (int i=0; i<FEATURE_DIM; ++i) {
+            for (int j=0; j<FEATURE_DIM; ++j) {
                 double v;
                 if (fscanf(file, "%lf", &v) != 1) {
                     finish = true;
                     break;
                 }
-                row.at<float>(i) = (float) v;
+                row.at<float>(j) = (float) v;
             }
             if (!finish) {
                 if (countNonZero(row) > 0) {
@@ -106,8 +106,9 @@ void parseFeature(const char* path, int k, vector<Mat> & features, vector<vector
         }
         fclose(file);
         Mat f(feature.size(), FEATURE_DIM, CV_32FC1);
-        for (size_t i=0; i<feature.size(); ++i) {
-            feature[i].copyTo(f.row(i));
+        for (size_t j=0; j<feature.size(); ++j) {
+            Mat row = f.row(j);
+            feature[j].copyTo(row);
         }
         features.push_back(f);
         fid.push_back(idx);

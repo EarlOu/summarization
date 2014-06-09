@@ -1,7 +1,9 @@
-#include "database/dataset.h"
+#include "database/Dataset.h"
 #include <assert.h>
 #include <algorithm>
 using std::sort;
+#include <stdio.h>
+#include <stdlib.h>
 
 Dataset::Dataset(const string& path)
 {

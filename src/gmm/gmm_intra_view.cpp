@@ -1,6 +1,7 @@
 #include "gmm/Sensor.h"
 #include "gmm/Sender.h"
 
+#include <stdio.h>
 #include <assert.h>
 #include <opencv2/opencv.hpp>
 using namespace cv;

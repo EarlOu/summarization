@@ -1,10 +1,15 @@
-#include <opencv2/opencv.hpp>
+#include "algorithm/FeatureExtractorCl.h"
+
 #include <deque>
+using std::deque;
 #include <math.h>
 #include <map>
 #include <utility>
+#include <stdio.h>
 
-#include "algorithm/FeatureExtractorCl.h"
+#include <opencv2/opencv.hpp>
+using namespace cv;
+
 
 #define SHOT_LENGTH 30
 #define SUMMARY_RATE 0.05
@@ -12,9 +17,6 @@
 #define D 30
 //#define D 90
 #define PRUNE_SIZE 1000
-
-using namespace cv;
-using std::deque;
 
 typedef vector<Mat> Shot;
 

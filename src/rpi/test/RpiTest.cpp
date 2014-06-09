@@ -1,5 +1,5 @@
-#include "rpi/RpiCamReader.h"
-#include "rpi/RpiHardwareEncoder.h"
+#include "rpi/rpi/RpiCamReader.h"
+#include "rpi/rpi/RpiHardwareEncoder.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>

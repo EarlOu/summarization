@@ -32,7 +32,8 @@ void FeatureExtractorLch3D::extract(InputArray iFrame, OutputArray oFeature) {
             int end_x = min((ix + sw), w);
             Mat block = row_block.colRange(begin_x, end_x);
             ix = end_x;
-            extractBlockHist(block, hist.rowRange(index, index + _dim));
+            Mat hist_block = hist.rowRange(index, index + _dim);
+            extractBlockHist(block, hist_block);
             index += _dim;
         }
     }
