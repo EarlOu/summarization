@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <thread>
 #include <vector>
 using std::vector;
 
@@ -20,6 +21,11 @@ using std::vector;
 using namespace cv;
 
 const int MAX_N_SENSOR = 10;
+
+void wait_enter() {
+    static char buf[1024];
+    fgets(buf, 1023, stdin);
+}
 
 struct ConnectInfo {
     int fd_msg;
@@ -36,7 +42,7 @@ static int listen_connection(int port) {
         perror("Failed to open listen socket");
         exit(EXIT_FAILURE);
     }
-    fcntl(svc, F_SETFL, O_NONBLOCK);
+//    fcntl(svc, F_SETFL, O_NONBLOCK);
 
     // set port resuable
     setsockopt(svc, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int));
@@ -94,53 +100,101 @@ static void wait_connection(int svc, vector<ConnectInfo>& client) {
         }
 
         if (FD_ISSET(STDIN_FILENO, &readfds)) {
-            char buf[1024];
-            scanf("%1023s", buf);
-            if (!strcmp(buf, "start")) {
-                break;
-            } else {
-                printf("Unknonw command: %s\n", buf);
-            }
+            wait_enter();
+            break;
         }
     }
 }
 
 class Sensor {
 public:
-    Sensor(ConnectInfo& info, in vid): _info(info), _vid(vid) {
+    Sensor(ConnectInfo& info, int vid): _info(info), _vid(vid) {
         char buf[128];
+        FILE* infofile;
 
         sprintf(buf, "info-%d.txt", vid);
-        FILE* infofile = fopen(buf, "w");
+        infofile = fopen(buf, "w");
         if (!infofile) {
             perror("Failed to open info file");
             exit(EXIT_FAILURE);
         }
-        _msg_thread = new std::thread(run_msg, _info.fd_msg, infofile);
+        _msg_thread = new std::thread(run_msg, _info.fd_msg, infofile, _vid);
+
+        sprintf(buf, "video-%d.264", vid);
+        infofile = fopen(buf, "wb");
+        if (!infofile) {
+            perror("Failed to open info file");
+            exit(EXIT_FAILURE);
+        }
+        _video_thread = new std::thread(run_video, _info.fd_video, infofile);
+    }
+
+    void start() {
+        char msg = MSG_START;
+        if (sendall(_info.fd_msg, &msg, 1) < 0) {
+            perror("Failed to send msg");
+            exit(EXIT_FAILURE);
+        }
     }
 
     void stop() {
+        char msg = MSG_STOP;
+        if (sendall(_info.fd_msg, &msg, 1) < 0) {
+            perror("Failed to send msg");
+            exit(EXIT_FAILURE);
+        }
+        _msg_thread->join();
+        _video_thread->join();
     }
 private:
-    ConnectInfo _into;
+    ConnectInfo _info;
     int _vid;
     std::thread* _video_thread;
     std::thread* _feature_thread;
     std::thread* _msg_thread;
 
-    static void run_msg(int socket, FILE* ofile) {
+    static void run_msg(int socket, FILE* ofile, int vid) {
         uint32_t buf[3];
-        int n = sizeof(uint32_t) * 3;
-        while (recvall(socket, buf, n) == n) {
+        int pkg_size = sizeof(uint32_t) * 3;
+        int n;
+        while ((n = recvall(socket, (char*) &buf, pkg_size)) == pkg_size) {
+            printf("%u %u %u\n", buf[0], buf[1], buf[2]);
             fprintf(ofile, "%u %u %u\n", buf[0], buf[1], buf[2]);
             fflush(ofile);
         }
         if (n < 0) {
             perror("Failed to receive msg");
+        } else {
+            printf("Sensor %d: msg socket closed by sensor(%d)\n", vid, n);
+        }
+
+        fclose(ofile);
+    }
+
+    static void run_video(int socket, FILE* ofile) {
+        uint8_t buf[65536];
+        int n;
+        while ((n = recv(socket, buf, n, 0)) > 0) {
+            fwrite(buf, n, 1, ofile);
+            fflush(ofile);
+        }
+        if (n < 0) {
+            perror("Failed to receive video");
         }
         fclose(ofile);
     }
-}
+
+    static void run_feature(int socket) {
+        int packet_size = 10;
+        char data[packet_size];
+        int n;
+        while ((n = recvall(socket, data, packet_size)) == packet_size) {
+        }
+        if (n < 0) {
+            perror("Failed to receive feature");
+        }
+    }
+};
 
 int main(int argc, char *argv[]) {
     printf("Listen to port: %d\n", PORT);
@@ -157,8 +211,14 @@ int main(int argc, char *argv[]) {
         sensors.push_back(new Sensor(client_fds[i], i));
     }
 
-    while (waitKey(0) & 0xff != 'q');
-    printf("Stoping system...\n");
+    printf("Sending start signal...\n");
+    for (int i=0; i<n_sensor; ++i) {
+        sensors[i]->start();
+    }
+
+    wait_enter();
+
+    printf("Sending stop signal...\n");
     for (int i=0; i<n_sensor; ++i) {
         sensors[i]->stop();
     }
