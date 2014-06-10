@@ -31,10 +31,8 @@ int connect_to(int32_t s_addr, int port) {
     return sockfd;
 }
 
-int listen_single_connect(int port) {
+int listen_connect(int port, int max_connect) {
     sockaddr_in my_addr;
-    sockaddr_in client_addr;
-    socklen_t alen = sizeof(client_addr);
     int sockoptval = 1;
 
     int sockfd;
@@ -56,11 +54,17 @@ int listen_single_connect(int port) {
         exit(EXIT_FAILURE);
     }
 
-    if (listen(sockfd, 1) < 0) {
+    if (listen(sockfd, max_connect) < 0) {
         perror("Failed to listen");
         exit(EXIT_FAILURE);
     }
 
+    return sockfd;
+}
+
+int accept_connect(int sockfd) {
+    sockaddr_in client_addr;
+    socklen_t alen = sizeof(client_addr);
     int rqst;
     if ((rqst = accept(sockfd, (struct sockaddr*) &client_addr, &alen)) < 0) {
         perror("Failed to accept");

@@ -15,14 +15,15 @@ public:
         _w = w;
         _h = h;
         _encoder.init(w, h, fps, fd);
-        _init = true;
         _buf = new uint8_t[w * h * 4];
+        _init = true;
     }
 
     void release() {
         if (!_init) return;
         delete[] _buf;
         _encoder.release();
+        _init = false;
     }
 
     void write(cv::InputArray frm);
