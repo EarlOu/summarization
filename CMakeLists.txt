@@ -9,5 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 include_directories(${CMAKE_SOURCE_DIR}/inc ${CMAKE_SOURCE_DIR}/lib/ilclient ${SDKSTAGE}/opt/vc/include/ ${SDKSTAGE}/opt/vc/include/interface/vcos/pthreads ${SDKSTAGE}/opt/vc/include/interface/vmcs_host/linux)
 link_directories(${CMAKE_BINARY_DIR}/lib)
 
+set(CMAKE_CXX_FLAGS "-std=c++11")
+
 add_subdirectory(lib)
 add_subdirectory(src)

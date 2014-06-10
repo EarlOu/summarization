@@ -1,10 +1,16 @@
 #include "rpi/common/Common.h"
 #include "rpi/common/NetUtil.h"
+#include "rpi/common/ConcurrentQueue.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <thread>
+#include <utility>
+
+typedef std::pair<int, int> Shot;
 
 // #include "gmm/Sensor.h"
 // #include "gmm/Sender.h"
@@ -35,7 +41,37 @@
 //     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 // }
 
+class ShotInfoSender {
+public:
+    ShotInfoSender(int sockfd): _sockfd(sockfd), _thread(run, sockfd, &_queue) {}
 
+    void sendShotInfo(Shot& s) {
+        _queue.push(s);
+    }
+    void end() {
+        _queue.push(Shot(0, 0));
+        _thread.join();
+    }
+private:
+    ConcurrentQueue<Shot> _queue;
+    int _sockfd;
+    std::thread _thread;
+
+    static void run(int fd, ConcurrentQueue<Shot>* q) {
+        Shot s;
+        int32_t buf[2];
+        while (true) {
+            s = q->pop();
+            if (s.first == 0 && s.second == 0) break;
+            buf[0] = s.first;
+            buf[1] = s.second;
+            if (sendall(fd, (char*) buf, 2 * sizeof(int32_t)) < 0) {
+                perror("Failed to send segment information");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+};
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -56,7 +92,15 @@ int main(int argc, char *argv[]) {
     printf("Successfully create feature channel, fd=%d\n", fd_feature);
 
     int fd_video = listen_single_connect(PORT_VIDEO);
-    printf("Successfully create feature channel, fd=%d\n", fd_video);
+    printf("Successfully create video channel, fd=%d\n", fd_video);
+
+    ShotInfoSender shotInfoSender(fd_msg);
+
+    Shot s;
+    while (scanf("%d %d\n", &(s.first), &(s.second)) == 2) {
+        shotInfoSender.sendShotInfo(s);
+    }
+    shotInfoSender.end();
 
 //     const int width = 320;
 //     const int height = 240;

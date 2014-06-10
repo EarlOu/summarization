@@ -8,12 +8,16 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <vector>
 using std::vector;
+
+#include <opencv2/opencv.hpp>
+using namespace cv;
 
 const int MAX_N_SENSOR = 10;
 
@@ -55,7 +59,7 @@ static int listen_connection(int port) {
 }
 
 
-void wait_connection(int svc, vector<ConnectInfo>& client) {
+static void wait_connection(int svc, vector<ConnectInfo>& client) {
     int rqst;
 
     fd_set readfds;
@@ -101,6 +105,42 @@ void wait_connection(int svc, vector<ConnectInfo>& client) {
     }
 }
 
+class Sensor {
+public:
+    Sensor(ConnectInfo& info, in vid): _info(info), _vid(vid) {
+        char buf[128];
+
+        sprintf(buf, "info-%d.txt", vid);
+        FILE* infofile = fopen(buf, "w");
+        if (!infofile) {
+            perror("Failed to open info file");
+            exit(EXIT_FAILURE);
+        }
+        _msg_thread = new std::thread(run_msg, _info.fd_msg, infofile);
+    }
+
+    void stop() {
+    }
+private:
+    ConnectInfo _into;
+    int _vid;
+    std::thread* _video_thread;
+    std::thread* _feature_thread;
+    std::thread* _msg_thread;
+
+    static void run_msg(int socket, FILE* ofile) {
+        uint32_t buf[3];
+        int n = sizeof(uint32_t) * 3;
+        while (recvall(socket, buf, n) == n) {
+            fprintf(ofile, "%u %u %u\n", buf[0], buf[1], buf[2]);
+            fflush(ofile);
+        }
+        if (n < 0) {
+            perror("Failed to receive msg");
+        }
+        fclose(ofile);
+    }
+}
 
 int main(int argc, char *argv[]) {
     printf("Listen to port: %d\n", PORT);
@@ -110,4 +150,16 @@ int main(int argc, char *argv[]) {
     printf("Type 'start' to begin the system.\n");
     printf("Wait for connection...\n");
     wait_connection(sock_fd, client_fds);
+
+    int n_sensor = client_fds.size();
+    vector<Sensor*> sensors;
+    for (int i=0; i<n_sensor; ++i) {
+        sensors.push_back(new Sensor(client_fds[i], i));
+    }
+
+    while (waitKey(0) & 0xff != 'q');
+    printf("Stoping system...\n");
+    for (int i=0; i<n_sensor; ++i) {
+        sensors[i]->stop();
+    }
 }

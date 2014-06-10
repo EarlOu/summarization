@@ -70,3 +70,27 @@ int listen_single_connect(int port) {
     close(sockfd);
     return rqst;
 }
+
+int sendall(int sockfd, char* buf, int len) {
+    int total = 0;
+
+    while (total < len) {
+        int n = send(sockfd, buf + total, len - total, 0);
+        if (n < 0) return n;
+        total += n;
+    }
+
+    return total;
+}
+
+int recvall(int sockfd, char* buf, int len) {
+    int total = 0;
+
+    while (total < len) {
+        int n = recv(sockfd, buf + total, len - total, 0);
+        if (n <= 0) return n;
+        total += n;
+    }
+
+    return total;
+}

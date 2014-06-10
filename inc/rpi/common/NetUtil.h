@@ -5,5 +5,7 @@
 
 int connect_to(int32_t s_addr, int port);
 int listen_single_connect(int port);
+int sendall(int sockfd, void* buf, int len);
+int recvall(int sockfd, char* buf, int len);
 
 #endif
