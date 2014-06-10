@@ -174,7 +174,7 @@ private:
     static void run_video(int socket, FILE* ofile) {
         uint8_t buf[65536];
         int n;
-        while ((n = recv(socket, buf, n, 0)) > 0) {
+        while ((n = recv(socket, buf, 65536, 0)) > 0) {
             fwrite(buf, n, 1, ofile);
             fflush(ofile);
         }
