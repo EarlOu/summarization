@@ -24,9 +24,11 @@ typedef std::pair<int, int> Shot;
 
 class RpiSender: public Sender {
 public:
-    RpiSender(int fd_msg): _fd_msg(fd_msg), _skim_start(false) {}
+    RpiSender(int fd_msg, RpiVideoWriter* writer)
+            :_fd_msg(fd_msg), _skim_start(false), _writer(writer) {}
 
     virtual void sendFrame(InputArray frame, size_t time, int idx) {
+        _writer->write(frame);
         assert(idx > _last_received_idx);
         if (_skim_start) {
             if (idx != _last_received_idx + 1) { // the shot is break
@@ -49,6 +51,8 @@ public:
         if (_skim_start) {
             stream_shot(_skim_start_idx, _last_received_idx+1, _skim_start_time, _last_received_time);
         }
+        _writer->release();
+        close(_writer->getCurrFd());
     }
 
 private:
@@ -58,6 +62,7 @@ private:
     int _last_received_idx;
     uint32_t _skim_start_time;
     uint32_t _last_received_time;
+    RpiVideoWriter* _writer;
 
     void stream_shot(int start_idx, int stop_idx, uint32_t start_time, uint32_t stop_time) {
         printf("Streaming Shot: %d %d %u %u\n", _skim_start_idx, _last_received_idx + 1
@@ -112,7 +117,7 @@ static size_t gettime() {
 // };
 
 void run_sensor(int fd_msg, RpiVideoCapture* cap, RpiVideoWriter* writer, bool* stop_flag) {
-    RpiSender sender(fd_msg);
+    RpiSender sender(fd_msg, writer);
     Sensor sensor(&sender, false);
 
     list<ReceivedFeature> features;
@@ -131,7 +136,18 @@ void run_sensor(int fd_msg, RpiVideoCapture* cap, RpiVideoWriter* writer, bool* 
     sensor.finish();
     sender.finish();
     // cap->release();
-    // writer->release();
+    writer->release();
+}
+
+void run_video(int sockfd, int encode_fd) {
+    char buf[65536];
+    int n;
+    while ((n = read(encode_fd, buf, 65536)) > 0) {
+        if (sendall(sockfd, buf, n) != n) {
+            perror("Failed to stream video");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 char recv_msg(int msg_fd) {
@@ -194,6 +210,7 @@ int main(int argc, char *argv[]) {
     printf("Starting...\n");
     bool stop_sensor_flag = false;
     std::thread sensor_thread(run_sensor, fd_msg, &cap, &writer, &stop_sensor_flag);
+    std::thread video_thread(run_video, fd_video, encoder_pipe[0]);
 
     msg = recv_msg(fd_msg);
     assert(msg == MSG_STOP);
@@ -201,6 +218,7 @@ int main(int argc, char *argv[]) {
 
     stop_sensor_flag = true;
     sensor_thread.join();
+    video_thread.join();
     close(fd_msg);
     close(fd_video);
     close(fd_feature);
