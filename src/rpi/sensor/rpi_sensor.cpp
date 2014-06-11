@@ -24,11 +24,11 @@ typedef std::pair<int, int> Shot;
 
 class RpiSender: public Sender {
 public:
-    RpiSender(int sock_meta): _sock_meta(sock_meta), _skim_start(false) {
-
-    }
+    RpiSender(int sock_meta, RpiVideoWriter* writer)
+            :_sock_meta(sock_meta), _skim_start(false), _writer(writer) {}
 
     virtual void sendFrame(InputArray frame, size_t time, int idx) {
+        _writer->write(frame);
         assert(idx > _last_received_idx);
         if (_skim_start) {
             if (idx != _last_received_idx + 1) { // the shot is break
@@ -51,6 +51,8 @@ public:
         if (_skim_start) {
             stream_shot(_skim_start_idx, _last_received_idx+1, _skim_start_time, _last_received_time);
         }
+        _writer->release();
+        close(_writer->getCurrFd());
     }
 
 private:
@@ -60,6 +62,7 @@ private:
     int _last_received_idx;
     uint32_t _skim_start_time;
     uint32_t _last_received_time;
+    RpiVideoWriter* _writer;
 
     void stream_shot(int start_idx, int stop_idx, uint32_t start_time, uint32_t stop_time) {
         printf("Streaming Shot: %d %d %u %u\n", _skim_start_idx, _last_received_idx + 1
@@ -121,7 +124,7 @@ void run_sensor(int width, int height, int encoder_fd, int sock_msg, bool* stop_
     RpiVideoWriter& writer = RpiVideoWriter::getInstance();
     writer.init(width, height, 30, encoder_fd);
 
-    RpiSender sender(sock_meta);
+    RpiSender sender(sock_meta, &writer);
     Sensor sensor(&sender, false);
 
     list<ReceivedFeature> features;
@@ -139,8 +142,19 @@ void run_sensor(int width, int height, int encoder_fd, int sock_msg, bool* stop_
     }
     sensor.finish();
     sender.finish();
-    cap.release();
-    writer.release();
+    // cap->release();
+    writer->release();
+}
+
+void run_video(int sockfd, int encode_fd) {
+    char buf[65536];
+    int n;
+    while ((n = read(encode_fd, buf, 65536)) > 0) {
+        if (sendall(sockfd, buf, n) != n) {
+            perror("Failed to stream video");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 char recv_msg(int msg_fd) {
@@ -198,6 +212,7 @@ int main(int argc, char *argv[]) {
     printf("Starting...\n");
     bool stop_sensor_flag = false;
     std::thread sensor_thread(run_sensor, width, height, encoder_fd[1], sock_meta, &stop_sensor_flag);
+    std::thread video_thread(run_video, fd_video, encoder_pipe[0]);
 
     msg = recv_msg(sock_meta);
     assert(msg == MSG_STOP);
@@ -205,6 +220,8 @@ int main(int argc, char *argv[]) {
 
     stop_sensor_flag = true;
     sensor_thread.join();
+    video_thread.join();
+
     close(sock_meta);
     close(sock_video);
     close(sock_feature);
