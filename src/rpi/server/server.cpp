@@ -1,4 +1,6 @@
+#include "gmm/Common.h"
 #include "rpi/common/Common.h"
+#include "rpi/common/ConcurrentQueue.h"
 #include "rpi/common/NetUtil.h"
 
 #include <arpa/inet.h>
@@ -28,9 +30,9 @@ void wait_enter() {
 }
 
 struct ConnectInfo {
-    int fd_msg;
-    int fd_feature;
-    int fd_video;
+    int sock_meta;
+    int sock_feature;
+    int sock_video;
 };
 
 static int listen_connection(int port) {
@@ -42,7 +44,6 @@ static int listen_connection(int port) {
         perror("Failed to open listen socket");
         exit(EXIT_FAILURE);
     }
-//    fcntl(svc, F_SETFL, O_NONBLOCK);
 
     // set port resuable
     setsockopt(svc, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int));
@@ -91,11 +92,11 @@ static void wait_connection(int svc, vector<ConnectInfo>& client) {
             printf("Accept connection from: %s:%d, fd = %d\n",
                     inet_ntoa(client_addr.sin_addr), (int) ntohs(client_addr.sin_port), rqst);
             ConnectInfo c;
-            c.fd_msg = rqst;
-            c.fd_feature = connect_to(client_addr.sin_addr.s_addr, PORT_FEATURE);
-            printf(">>> Connect to feature channel, fd = %d\n", c.fd_feature);
-            c.fd_video = connect_to(client_addr.sin_addr.s_addr, PORT_VIDEO);
-            printf(">>> Connect to video channel, fd = %d\n", c.fd_video);
+            c.sock_meta = rqst;
+            c.sock_feature = connect_to(client_addr.sin_addr.s_addr, PORT_FEATURE);
+            printf(">>> Connect to feature channel, fd = %d\n", c.sock_feature);
+            c.sock_video = connect_to(client_addr.sin_addr.s_addr, PORT_VIDEO);
+            printf(">>> Connect to video channel, fd = %d\n", c.sock_video);
             client.push_back(c);
         }
 
@@ -106,32 +107,81 @@ static void wait_connection(int svc, vector<ConnectInfo>& client) {
     }
 }
 
+typedef std::pair<int, char*> Feature;
+
+const int FEATURE_SIZE = INTER_FEATURE_DIM * 4 + 1 + 1;
+
+class FeatureSender {
+public:
+    FeatureSender(std::vector<ConnectInfo>& info)
+            :_queue(new ConcurrentQueue<Feature>()), _info(&info) {}
+
+    void start() {
+        _thread = new std::thread(run, _queue, _info);
+    }
+
+    void stop() {
+        Feature f;
+        f.first = 0;
+        f.second = 0;
+        _queue->push(f);
+        _thread->join();
+    }
+
+    void broadcastFeature(Feature & f) {
+        _queue->push(f);
+    }
+private:
+    ConcurrentQueue<Feature>* _queue;
+    std::vector<ConnectInfo>* _info;
+    std::thread* _thread;
+
+    static void run(ConcurrentQueue<Feature>* queue, std::vector<ConnectInfo>* info) {
+        Feature f;
+        while (true) {
+            f = queue->pop();
+            if (!f.second) break;
+            int vid = f.first;
+            for (int i=0, n=info->size(); i<n; ++i) {
+                if (i == vid) continue;
+                if (sendall(info->operator[](i).sock_feature, f.second, FEATURE_SIZE) != FEATURE_SIZE) {
+                    perror("Failed to send feature");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
+};
+
 class Sensor {
 public:
-    Sensor(ConnectInfo& info, int vid): _info(info), _vid(vid) {
+    Sensor(ConnectInfo& info, int vid, FeatureSender& sender)
+            :_info(info), _vid(vid), _sender(&sender) {}
+
+    void start() {
         char buf[128];
         FILE* infofile;
 
-        sprintf(buf, "info-%d.txt", vid);
+        sprintf(buf, "info-%d.txt", _vid);
         infofile = fopen(buf, "w");
         if (!infofile) {
             perror("Failed to open info file");
             exit(EXIT_FAILURE);
         }
-        _msg_thread = new std::thread(run_msg, _info.fd_msg, infofile, _vid);
+        _msg_thread = new std::thread(run_msg, _info.sock_meta, infofile, _vid);
 
-        sprintf(buf, "video-%d.264", vid);
+        sprintf(buf, "video-%d.264", _vid);
         infofile = fopen(buf, "wb");
         if (!infofile) {
             perror("Failed to open info file");
             exit(EXIT_FAILURE);
         }
-        _video_thread = new std::thread(run_video, _info.fd_video, infofile);
-    }
+        _video_thread = new std::thread(run_video, _info.sock_video, infofile);
 
-    void start() {
+        _feature_thread = new std::thread(run_feature, _info.sock_feature, _vid, _sender);
+
         char msg = MSG_START;
-        if (sendall(_info.fd_msg, &msg, 1) < 0) {
+        if (sendall(_info.sock_meta, &msg, 1) < 0) {
             perror("Failed to send msg");
             exit(EXIT_FAILURE);
         }
@@ -139,12 +189,13 @@ public:
 
     void stop() {
         char msg = MSG_STOP;
-        if (sendall(_info.fd_msg, &msg, 1) < 0) {
+        if (sendall(_info.sock_meta, &msg, 1) < 0) {
             perror("Failed to send msg");
             exit(EXIT_FAILURE);
         }
         _msg_thread->join();
         _video_thread->join();
+        _feature_thread->join();
     }
 private:
     ConnectInfo _info;
@@ -152,6 +203,7 @@ private:
     std::thread* _video_thread;
     std::thread* _feature_thread;
     std::thread* _msg_thread;
+    FeatureSender* _sender;
 
     static void run_msg(int socket, FILE* ofile, int vid) {
         uint32_t buf[3];
@@ -184,11 +236,16 @@ private:
         fclose(ofile);
     }
 
-    static void run_feature(int socket) {
-        int packet_size = 10;
-        char data[packet_size];
+    static void run_feature(int socket, int vid, FeatureSender* sender) {
+        char data[FEATURE_SIZE];
         int n;
-        while ((n = recvall(socket, data, packet_size)) == packet_size) {
+        while ((n = recvall(socket, data, FEATURE_SIZE)) == FEATURE_SIZE) {
+            char* buf = new char[FEATURE_SIZE];
+            memcpy(buf, data, FEATURE_SIZE);
+            Feature f;
+            f.first = vid;
+            f.second = buf;
+            sender->broadcastFeature(f);
         }
         if (n < 0) {
             perror("Failed to receive feature");
@@ -206,9 +263,13 @@ int main(int argc, char *argv[]) {
     wait_connection(sock_fd, client_fds);
 
     int n_sensor = client_fds.size();
+
+    FeatureSender featureSender(client_fds);
+    featureSender.start();
+
     vector<Sensor*> sensors;
     for (int i=0; i<n_sensor; ++i) {
-        sensors.push_back(new Sensor(client_fds[i], i));
+        sensors.push_back(new Sensor(client_fds[i], i, featureSender));
     }
 
     printf("Sending start signal...\n");
@@ -217,6 +278,8 @@ int main(int argc, char *argv[]) {
     }
 
     wait_enter();
+
+    featureSender.stop();
 
     printf("Sending stop signal...\n");
     for (int i=0; i<n_sensor; ++i) {

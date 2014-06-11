@@ -24,7 +24,9 @@ typedef std::pair<int, int> Shot;
 
 class RpiSender: public Sender {
 public:
-    RpiSender(int fd_msg): _fd_msg(fd_msg), _skim_start(false) {}
+    RpiSender(int sock_meta): _sock_meta(sock_meta), _skim_start(false) {
+
+    }
 
     virtual void sendFrame(InputArray frame, size_t time, int idx) {
         assert(idx > _last_received_idx);
@@ -52,7 +54,7 @@ public:
     }
 
 private:
-    int _fd_msg;
+    int _sock_meta;
     bool _skim_start;
     int _skim_start_idx;
     int _last_received_idx;
@@ -66,7 +68,7 @@ private:
         buf[0] = start_time;
         buf[1] = stop_time;
         buf[2] = stop_idx - start_idx;
-        if (sendall(_fd_msg, (char*) buf, 3 * sizeof(uint32_t)) != 3 * sizeof(uint32_t)) {
+        if (sendall(_sock_meta, (char*) buf, 3 * sizeof(uint32_t)) != 3 * sizeof(uint32_t)) {
             perror("Failed to send shot info");
             exit(EXIT_FAILURE);
         }
@@ -111,15 +113,22 @@ static size_t gettime() {
 //     }
 // };
 
-void run_sensor(int fd_msg, RpiVideoCapture* cap, RpiVideoWriter* writer, bool* stop_flag) {
-    RpiSender sender(fd_msg);
+void run_sensor(int width, int height, int encoder_fd, int sock_msg, bool* stop_flag) {
+
+    RpiVideoCapture& cap = RpiVideoCapture::getInstance();
+    cap.init(width, height);
+
+    RpiVideoWriter& writer = RpiVideoWriter::getInstance();
+    writer.init(width, height, 30, encoder_fd);
+
+    RpiSender sender(sock_meta);
     Sensor sensor(&sender, false);
 
     list<ReceivedFeature> features;
     Mat frame;
     int idx = 0;
     uint32_t prev_time;
-    while (!(*stop_flag) && cap->read(frame)) {
+    while (!(*stop_flag) && cap.read(frame)) {
         uint32_t time = gettime();
         if (idx != 0) {
             printf("Frame #%d, FPS = %f\n", idx, 1000.0f / (time-prev_time));
@@ -130,8 +139,8 @@ void run_sensor(int fd_msg, RpiVideoCapture* cap, RpiVideoWriter* writer, bool* 
     }
     sensor.finish();
     sender.finish();
-    // cap->release();
-    // writer->release();
+    cap.release();
+    writer.release();
 }
 
 char recv_msg(int msg_fd) {
@@ -157,16 +166,11 @@ int main(int argc, char *argv[]) {
     const int width = 320;
     const int height = 240;
 
-    RpiVideoCapture& cap = RpiVideoCapture::getInstance();
-    cap.init(width, height);
-
     int encoder_pipe[2];
     if (pipe(encoder_pipe) < 0) {
         perror("Failed to create encoder pipe");
         exit(EXIT_FAILURE);
     }
-    RpiVideoWriter& writer = RpiVideoWriter::getInstance();
-    writer.init(width, height, 30, encoder_pipe[1]);
 
     sockaddr_in addr;
     if (inet_aton(argv[1], &addr.sin_addr) < 0) {
@@ -175,33 +179,33 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Trying to connect to server...\n");
-    int fd_feature_listen = listen_connect(PORT_FEATURE);
-    int fd_video_listen = listen_connect(PORT_VIDEO);
-    int fd_msg = connect_to(addr.sin_addr.s_addr, PORT);
-    printf("Successfully connect to server, fd=%d\n", fd_msg);
+    int sock_feature_listen = listen_connect(PORT_FEATURE);
+    int sock_video_listen = listen_connect(PORT_VIDEO);
+    int sock_meta = connect_to(addr.sin_addr.s_addr, PORT);
+    printf("Successfully connect to server, fd=%d\n", sock_meta);
 
-    int fd_feature = accept_connect(fd_feature_listen);
-    printf("Successfully create feature channel, fd=%d\n", fd_feature);
-    close(fd_feature_listen);
+    int sock_feature = accept_connect(sock_feature_listen);
+    printf("Successfully create feature channel, fd=%d\n", sock_feature);
+    close(sock_feature_listen);
 
-    int fd_video = accept_connect(fd_video_listen);
-    printf("Successfully create video channel, fd=%d\n", fd_video);
-    close(fd_video_listen);
+    int sock_video = accept_connect(sock_video_listen);
+    printf("Successfully create video channel, fd=%d\n", sock_video);
+    close(sock_video_listen);
 
-    char msg = recv_msg(fd_msg);
+    char msg = recv_msg(sock_meta);
     assert(msg == MSG_START);
 
     printf("Starting...\n");
     bool stop_sensor_flag = false;
-    std::thread sensor_thread(run_sensor, fd_msg, &cap, &writer, &stop_sensor_flag);
+    std::thread sensor_thread(run_sensor, width, height, encoder_fd[1], sock_meta, &stop_sensor_flag);
 
-    msg = recv_msg(fd_msg);
+    msg = recv_msg(sock_meta);
     assert(msg == MSG_STOP);
     printf("Stopping...\n");
 
     stop_sensor_flag = true;
     sensor_thread.join();
-    close(fd_msg);
-    close(fd_video);
-    close(fd_feature);
+    close(sock_meta);
+    close(sock_video);
+    close(sock_feature);
 }

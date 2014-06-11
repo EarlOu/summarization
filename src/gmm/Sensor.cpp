@@ -48,7 +48,7 @@ static void extractIntraStageFeature(
     }
 
     // compute HSV histogram
-    static const int histSize = 16;
+    static const int histSize = INTER_FEATURE_DIM;
     static const float range[] = {0, 181};
     static const float* histRange = {range};
     Mat hsvFrame;

@@ -9,8 +9,21 @@
 template<typename T>
 class ConcurrentQueue {
 public:
-    T pop();
-    void push(T);
+    T pop() {
+        std::unique_lock<std::mutex> mlock(_mutex);
+        while (_queue.empty()) {
+            _cond.wait(mlock);
+        }
+        T& item = _queue.front();
+        _queue.pop();
+        return item;
+    }
+    void push(T& item) {
+        std::unique_lock<std::mutex> mlock(_mutex);
+        _queue.push(item);
+        mlock.unlock();
+        _cond.notify_one();
+    }
 private:
     std::queue<T> _queue;
     std::mutex _mutex;
