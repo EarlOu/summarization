@@ -239,6 +239,7 @@ void RpiHardwareEncoder::encode(uint8_t* frame) {
 
 void RpiHardwareEncoder::release() {
     if (!_init) return;
+    _init = false;
     printf("disabling port buffers for 200 and 201...\n");
     ilclient_disable_port_buffers(_video_encode_context, 200, NULL, NULL, NULL);
     ilclient_disable_port_buffers(_video_encode_context, 201, NULL, NULL, NULL);

@@ -51,8 +51,6 @@ public:
         if (_skim_start) {
             stream_shot(_skim_start_idx, _last_received_idx+1, _skim_start_time, _last_received_time);
         }
-        _writer->release();
-        close(_writer->getCurrFd());
     }
 
 private:
@@ -116,7 +114,7 @@ static size_t gettime() {
 //     }
 // };
 
-void run_sensor(int width, int height, int encoder_fd, int sock_msg, bool* stop_flag) {
+void run_sensor(int width, int height, int encoder_fd, int sock_meta, bool* stop_flag) {
 
     RpiVideoCapture& cap = RpiVideoCapture::getInstance();
     cap.init(width, height);
@@ -142,8 +140,9 @@ void run_sensor(int width, int height, int encoder_fd, int sock_msg, bool* stop_
     }
     sensor.finish();
     sender.finish();
-    // cap->release();
-    writer->release();
+    cap.release();
+    writer.release();
+    close(encoder_fd);
 }
 
 void run_video(int sockfd, int encode_fd) {
@@ -211,8 +210,8 @@ int main(int argc, char *argv[]) {
 
     printf("Starting...\n");
     bool stop_sensor_flag = false;
-    std::thread sensor_thread(run_sensor, width, height, encoder_fd[1], sock_meta, &stop_sensor_flag);
-    std::thread video_thread(run_video, fd_video, encoder_pipe[0]);
+    std::thread sensor_thread(run_sensor, width, height, encoder_pipe[1], sock_meta, &stop_sensor_flag);
+    std::thread video_thread(run_video, sock_video, encoder_pipe[0]);
 
     msg = recv_msg(sock_meta);
     assert(msg == MSG_STOP);
