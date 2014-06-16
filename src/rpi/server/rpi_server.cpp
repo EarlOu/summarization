@@ -238,6 +238,7 @@ private:
         static char data[INTER_FEATURE_SIZE];
         int n;
         while ((n = recvall(socket, data, INTER_FEATURE_SIZE)) == INTER_FEATURE_SIZE) {
+            printf("Feature Received, vid = %d\n", vid);
             char* buf = new char[INTER_FEATURE_SIZE];
             memcpy(buf, data, INTER_FEATURE_SIZE);
             Feature f;
