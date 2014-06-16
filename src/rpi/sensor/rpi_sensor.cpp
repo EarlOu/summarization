@@ -125,7 +125,7 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, bool* stop
     RpiSender sender(sock_meta, &writer);
     Sensor sensor(&sender, false);
 
-    list<ReceivedFeature> features;
+    list<FeaturePacket> features;
     Mat frame;
     int idx = 0;
     uint32_t prev_time;

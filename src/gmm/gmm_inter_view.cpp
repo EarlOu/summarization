@@ -26,11 +26,11 @@ public:
     void broadcastFeature(InputArray iFeature, double score, size_t time, int vid) {
         for (int i=0; i<_n_sensor; ++i) {
             if (i == vid) continue;
-            _features[i].push_back(ReceivedFeature(iFeature.getMat(), score, time));
+            _features[i].push_back(FeaturePacket(iFeature.getMat(), score, time));
         }
     }
 
-    list<ReceivedFeature>& getFeatures(int vid) {
+    list<FeaturePacket>& getFeatures(int vid) {
         return _features[vid];
     }
 
@@ -112,7 +112,7 @@ public:
 private:
     int _n_sensor;
     FILE* _ofile;
-    vector<list<ReceivedFeature> > _features;
+    vector<list<FeaturePacket> > _features;
     vector<bool> _skim_start;
     vector<int> _skim_start_idx;
     vector<int> _last_received_idx;

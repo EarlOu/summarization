@@ -16,7 +16,7 @@ class Sensor {
 public:
     Sensor(Sender* sender, bool intra_only = false)
             : _sender(sender), INTRA_ONLY(intra_only), _featureExtractor(N_BLOCK) {}
-    void next(int idx, cv::InputArray iFrame, size_t time, list<ReceivedFeature>& features);
+    void next(int idx, cv::InputArray iFrame, size_t time, list<FeaturePacket>& features);
     void finish();
 private:
     Sender* _sender;

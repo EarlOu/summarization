@@ -65,7 +65,7 @@ static void extractIntraStageFeature(
     score = s[0] + s[1] + s[2];
 }
 
-void Sensor::next(int idx, cv::InputArray iFrame, size_t time, list<ReceivedFeature>& features) {
+void Sensor::next(int idx, cv::InputArray iFrame, size_t time, list<FeaturePacket>& features) {
     Mat frame = iFrame.getMat();
 
     // intra stage
@@ -97,7 +97,7 @@ void Sensor::next(int idx, cv::InputArray iFrame, size_t time, list<ReceivedFeat
     }
 
     // match frames in the buffer
-    for (list<ReceivedFeature>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
+    for (list<FeaturePacket>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
         list<BufferedFeature>::iterator it_b;
         for (it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
             if (abs(it_r->time - it_b->time) < FEATURE_MATCH_TIME_TH) break;
