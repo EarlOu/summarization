@@ -1,7 +1,7 @@
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_library(gmm Sensor.cpp OnlineClusterMog.cpp)
+add_library(gmm Sensor.cpp OnlineClusterMog.cpp Common.cpp)
 target_link_libraries(gmm algorithm ${OpenCV_LIBS})
 
 add_executable(gmm_intra_view gmm_intra_view.cpp)

@@ -7,14 +7,60 @@
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
+#include <algorithm>
+
 #define N_BLOCK 8
 #define BUFFER_TIME 3000 // 3 seconds buffer time for network delay
 #define FEATURE_MATCH_TIME_TH 10
 #define FEATURE_MATCH_TH 0.7
 
+static void bgr2h(InputArray iFrame, OutputArray oHFrame, InputArray iMask) {
+    Mat frame = iFrame.getMat();
+    Mat mask = iMask.getMat();
+
+    int w = frame.size().width;
+    int h = frame.size().height;
+
+    oHFrame.create(frame.size(), CV_8U);
+    Mat hFrame = oHFrame.getMat();
+
+    for (int y=0; y<h; ++y) {
+        unsigned char* ptr = frame.ptr<unsigned char>(y);
+        unsigned char* ptr_mask = mask.ptr<unsigned char>(y);
+        unsigned char* h_ptr = hFrame.ptr<unsigned char>(y);
+        for (int x=0; x<w; ++x) {
+            int h = 0;
+            if (*ptr_mask++) {
+                unsigned char _min = ptr[0];
+                unsigned char _max = ptr[0];
+                for (int c=1; c<3; ++c) {
+                    _min = std::min(_min, ptr[c]);
+                    _max = std::max(_max, ptr[c]);
+                }
+                int b = ptr[0];
+                int g = ptr[1];
+                int r = ptr[2];
+                if (_max != _min) {
+                    if (r == _max) {
+                        h = 60 * (g - b) / (r - _min);
+                    } else if (g == _max) {
+                        h = 120 + 60 * (b - r) / (g - _min);
+                    } else {
+                        h = 240 + 60 * (r - g) / (b - _min);
+                    }
+                    h = (h < 0) ? (h + 360) : h;
+                }
+            }
+            h_ptr[0] = (unsigned char) h;
+            h_ptr++;
+            ptr+=3;
+        }
+    }
+}
+
 static void extractIntraStageFeature(
         InputArray iFrame, InputArray iFeature, InputArray iBackground,
-        OutputArray oFeature, double & score) {
+        OutputArray oFeature, float & score) {
 
     Mat frame = iFrame.getMat();
     Mat feature = iFeature.getMat();
@@ -51,12 +97,13 @@ static void extractIntraStageFeature(
     static const int histSize = INTER_FEATURE_DIM;
     static const float range[] = {0, 181};
     static const float* histRange = {range};
-    Mat hsvFrame;
-    cvtColor(frame, hsvFrame, CV_BGR2HSV);
-    vector<Mat> hsv;
-    split(hsvFrame, hsv);
-    Mat hFrame = hsv[0];
-    calcHist(&hFrame, 1, 0, mask, oFeature, 1, &histSize, &histRange, true, false);
+    Mat hFrame;
+    bgr2h(frame, hFrame, mask);
+    Mat tmpFeature;
+    calcHist(&hFrame, 1, 0, mask, tmpFeature, 1, &histSize, &histRange, true, false);
+    float n = countNonZero(mask);
+    tmpFeature = (n == 0) ? tmpFeature : (tmpFeature / n);
+    tmpFeature.convertTo(oFeature, CV_32F);
 
     // compute score
     Mat residue;
@@ -65,7 +112,7 @@ static void extractIntraStageFeature(
     score = s[0] + s[1] + s[2];
 }
 
-void Sensor::next(int idx, cv::InputArray iFrame, size_t time, list<FeaturePacket>& features) {
+void Sensor::next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePacket>& features) {
     Mat frame = iFrame.getMat();
 
     // intra stage
@@ -89,7 +136,7 @@ void Sensor::next(int idx, cv::InputArray iFrame, size_t time, list<FeaturePacke
     if (choose) {
         Mat background;
         Mat intraFeature;
-        double score;
+        float score;
         _onlineCluster.getBackground(background);
         extractIntraStageFeature(frame, feature, background, intraFeature, score);
         _buf.push_back(BufferedFeature(intraFeature, score, time, frame, idx));

@@ -13,7 +13,7 @@ class IntraSimulateSender: public Sender {
 public:
     IntraSimulateSender(): _skim_start(false), _skim_start_idx(0), _last_received_idx(0) {}
 
-    virtual void sendFrame(InputArray frame, size_t time, int idx) {
+    virtual void sendFrame(InputArray frame, uint32_t time, int idx) {
         assert(idx > _last_received_idx);
         if (_skim_start) {
             if (idx != _last_received_idx + 1) { // the shot is break
@@ -27,7 +27,7 @@ public:
         _last_received_idx = idx;
     }
 
-    virtual void sendFeature(InputArray iFeature, double score, size_t time, int idx) {}
+    virtual void sendFeature(InputArray iFeature, float score, uint32_t time, int idx) {}
 
     void finish() {
         if (_skim_start) {
@@ -51,10 +51,10 @@ int main(int argc, char *argv[]) {
     IntraSimulateSender sender;
     Sensor sensor(&sender, true);
 
-    list<ReceivedFeature> features;
+    list<FeaturePacket> features;
     Mat frame;
     int idx = 0;
-    size_t time = 0;
+    uint32_t time = 0;
     while (cap.read(frame)) {
         sensor.next(idx, frame, time, features);
         idx++;

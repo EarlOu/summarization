@@ -27,7 +27,7 @@ public:
     RpiSender(int sock_meta, RpiVideoWriter* writer)
             :_sock_meta(sock_meta), _skim_start(false), _writer(writer) {}
 
-    virtual void sendFrame(InputArray frame, size_t time, int idx) {
+    virtual void sendFrame(InputArray frame, uint32_t time, int idx) {
         _writer->write(frame);
         assert(idx > _last_received_idx);
         if (_skim_start) {
@@ -45,7 +45,7 @@ public:
         _last_received_time = time;
     }
 
-    virtual void sendFeature(InputArray iFeature, double score, size_t time, int idx) {}
+    virtual void sendFeature(InputArray iFeature, double score, uint32_t time, int idx) {}
 
     void finish() {
         if (_skim_start) {
@@ -76,7 +76,7 @@ private:
     }
 };
 
-static size_t gettime() {
+static uint64_t gettime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;

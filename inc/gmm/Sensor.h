@@ -6,6 +6,7 @@
 #include "OnlineClusterMog.h"
 #include "algorithm/FeatureExtractorCl.h"
 
+#include <inttypes.h>
 #include <opencv2/opencv.hpp>
 #include <list>
 using std::list;
@@ -16,7 +17,7 @@ class Sensor {
 public:
     Sensor(Sender* sender, bool intra_only = false)
             : _sender(sender), INTRA_ONLY(intra_only), _featureExtractor(N_BLOCK) {}
-    void next(int idx, cv::InputArray iFrame, size_t time, list<FeaturePacket>& features);
+    void next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePacket>& features);
     void finish();
 private:
     Sender* _sender;

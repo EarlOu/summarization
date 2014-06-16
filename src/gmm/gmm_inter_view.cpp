@@ -9,8 +9,8 @@
 #include <opencv2/opencv.hpp>
 using namespace cv;
 
-#define FPS 30
-#define MINI_SEC_PER_FRAME 33
+const int FPS = 30;
+const int MINI_SEC_PER_FRAME = 1000 / FPS;
 
 class Server {
 private:
@@ -23,18 +23,23 @@ public:
             _last_received_idx(n_sensor, 0),
             _skim(n_sensor) {}
 
-    void broadcastFeature(InputArray iFeature, double score, size_t time, int vid) {
+    void broadcastFeature(char* feature, int vid) {
         for (int i=0; i<_n_sensor; ++i) {
             if (i == vid) continue;
-            _features[i].push_back(FeaturePacket(iFeature.getMat(), score, time));
+            char* buf = new char[INTER_FEATURE_SIZE];
+            memcpy(buf, feature, INTER_FEATURE_SIZE);
+            _features[i].push_back(buf);
         }
     }
 
-    list<FeaturePacket>& getFeatures(int vid) {
+    list<char*>& getFeatures(int vid) {
         return _features[vid];
     }
 
     void clearBuf(int vid) {
+        for (list<char*>::iterator it=_features[vid].begin(); it!=_features[vid].end(); it++) {
+            delete[] *it;
+        }
         _features[vid].clear();
     }
 
@@ -112,7 +117,7 @@ public:
 private:
     int _n_sensor;
     FILE* _ofile;
-    vector<list<FeaturePacket> > _features;
+    vector<list<char*> > _features;
     vector<bool> _skim_start;
     vector<int> _skim_start_idx;
     vector<int> _last_received_idx;
@@ -125,12 +130,16 @@ public:
     SimulateSender(Server& server, int vid)
             :_server(server), _vid(vid) {}
 
-    virtual void sendFrame(InputArray iFrame, size_t time, int idx) {
+    virtual void sendFrame(InputArray iFrame, uint32_t time, int idx) {
         _server.sendFrame(idx, _vid);
     }
 
-    virtual void sendFeature(InputArray iFeature, double score, size_t time, int idx) {
-        _server.broadcastFeature(iFeature, score, time, _vid);
+    virtual void sendFeature(InputArray iFeature, float score, uint32_t time, int idx) {
+        FeaturePacket p(iFeature.getMat(), score, time);
+        char* buf = new char[INTER_FEATURE_SIZE];
+        p.pack(buf);
+        _server.broadcastFeature(buf, _vid);
+        delete[] buf;
     }
 
     virtual void finish() {}
@@ -174,14 +183,19 @@ int main(int argc, char *argv[]) {
     }
 
     int idx = 0;
-    size_t time = 0;
+    uint32_t time = 0;
     while (true) {
         bool done = true;
         for (int i=0; i<n_sensor; ++i) {
             if (idx >= offsets[i]) {
                 Mat frame;
                 if (idx < lengths[i] && caps[i]->read(frame)) done = false;
-                sensors[i]->next(idx, frame, time, server.getFeatures(i));
+                list<FeaturePacket> features;
+                list<char*>& features_raw = server.getFeatures(i);
+                for (list<char*>::iterator it = features_raw.begin(); it!=features_raw.end(); it++) {
+                    features.push_back(FeaturePacket(*it));
+                }
+                sensors[i]->next(idx, frame, time, features);
                 server.clearBuf(i);
             }
         }
