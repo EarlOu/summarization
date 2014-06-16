@@ -36,7 +36,7 @@ static void errno_exit(const char *s) {
     exit(EXIT_FAILURE);
 }
 
-void RpiCamReader::init(int w, int h, int pixel_format) {
+void RpiCamReader::init(int w, int h, int fps, int pixel_format) {
     if (_init) {
         fprintf(stderr, "call init() twice without calling release()\n");
         exit(EXIT_FAILURE);
@@ -46,7 +46,7 @@ void RpiCamReader::init(int w, int h, int pixel_format) {
         exit(EXIT_FAILURE);
     }
     char buf[1024];
-    sprintf(buf, "uv4l --driver raspicam --encoding bgra --width %d --height %d", w, h);
+    sprintf(buf, "uv4l --driver raspicam --encoding bgra --width %d --height %d --framerate %d", w, h, fps);
 
     system("sudo pkill uv4l");
 

@@ -15,7 +15,7 @@ public:
         static RpiCamReader instance;
         return instance;
     }
-    void init(int w, int h, int pixel_type = CAP_BGRA8888);
+    void init(int w, int h, int fps, int pixel_type = CAP_BGRA8888);
     bool read(uint8_t* frame);
     void release();
 

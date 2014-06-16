@@ -48,21 +48,16 @@ private:
     std::thread* _thread;
 
     static void run_recv(int sock_feature, std::mutex* mutex, list<char*>* buf) {
-        while (true) {
-            char* data = new char[INTER_FEATURE_SIZE];
-            int n = recvall(sock_feature, data, INTER_FEATURE_SIZE);
-            if (n != INTER_FEATURE_SIZE) {
-                if (n != 0) {
-                    perror("Failed to receive feature");
-                    exit(EXIT_FAILURE);
-                } else {
-                    printf("Feature channel closed by the server.\n");
-                    break;
-                }
-            }
+        char* data = new char[INTER_FEATURE_SIZE];
+        int n;
+        while ((n = recvall(sock_feature, data, INTER_FEATURE_SIZE)) == INTER_FEATURE_SIZE) {
             std::unique_lock<std::mutex> lock(*mutex);
             buf->push_back(data);
             lock.unlock();
+        }
+        if (n != 0) {
+            perror("Failed to receive feature");
+            exit(EXIT_FAILURE);
         }
     }
 };
@@ -142,7 +137,7 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, int sock_f
         FeatureReceiver* receiver, bool* stop_flag) {
 
     RpiVideoCapture& cap = RpiVideoCapture::getInstance();
-    cap.init(width, height);
+    cap.init(width, height, FPS);
 
     RpiVideoWriter& writer = RpiVideoWriter::getInstance();
     writer.init(width, height, 30, encoder_fd);

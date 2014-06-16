@@ -11,12 +11,12 @@ public:
         return instance;
     }
 
-    void init(int w, int h) {
+    void init(int w, int h, int fps) {
         _w = w;
         _h = h;
         _buf = new uint8_t[w * h * 4];
         _init = true;
-        _reader.init(w, h);
+        _reader.init(w, h, fps);
     }
 
     void release() {

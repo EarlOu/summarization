@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+const int FPS = 20;
+
 const int PORT = 1234;
 const int PORT_FEATURE = 1235;
 const int PORT_VIDEO = 1236;
