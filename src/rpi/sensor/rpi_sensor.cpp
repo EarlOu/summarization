@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include <thread>
+#include <mutex>
 #include <utility>
 
 #include <opencv2/opencv.hpp>
@@ -22,10 +23,55 @@ using namespace cv;
 
 typedef std::pair<int, int> Shot;
 
+class FeatureReceiver {
+public:
+    FeatureReceiver(int sock_feature): _sock_feature(sock_feature) {}
+
+    void start() {
+        _thread = new std::thread(run_recv, _sock_feature, &_mutex, &_buf);
+    }
+
+    void readFeature(list<FeaturePacket>& features) {
+        std::unique_lock<std::mutex> lock(_mutex);
+        for (list<char*>::iterator it = _buf.begin(); it!=_buf.end(); it++) {
+            features.push_back(FeaturePacket(*it));
+            delete[] *it;
+        }
+        _buf.clear();
+        lock.unlock();
+    }
+
+private:
+    int _sock_feature;
+    list<char*> _buf;
+    std::mutex _mutex;
+    std::thread* _thread;
+
+    static void run_recv(int sock_feature, std::mutex* mutex, list<char*>* buf) {
+        while (true) {
+            char* data = new char[INTER_FEATURE_SIZE];
+            int n = recvall(sock_feature, data, INTER_FEATURE_SIZE);
+            if (n != INTER_FEATURE_SIZE) {
+                if (n != 0) {
+                    perror("Failed to receive feature");
+                    exit(EXIT_FAILURE);
+                } else {
+                    printf("Feature channel closed by the server.\n");
+                    break;
+                }
+            }
+            std::unique_lock<std::mutex> lock(*mutex);
+            buf->push_back(data);
+            lock.unlock();
+        }
+    }
+};
+
 class RpiSender: public Sender {
 public:
-    RpiSender(int sock_meta, RpiVideoWriter* writer)
-            :_sock_meta(sock_meta), _skim_start(false), _writer(writer) {}
+    RpiSender(int sock_meta, int sock_feature, RpiVideoWriter* writer)
+            :_sock_meta(sock_meta), _sock_feature(sock_feature), _skim_start(false),
+             _writer(writer), _feature_buf(new char[INTER_FEATURE_SIZE]) {}
 
     virtual void sendFrame(InputArray frame, uint32_t time, int idx) {
         _writer->write(frame);
@@ -45,7 +91,14 @@ public:
         _last_received_time = time;
     }
 
-    virtual void sendFeature(InputArray iFeature, double score, uint32_t time, int idx) {}
+    virtual void sendFeature(InputArray iFeature, float score, uint32_t time, int idx) {
+        FeaturePacket p(iFeature.getMat(), score, time);
+        p.pack(_feature_buf);
+        if (sendall(_sock_feature, _feature_buf, INTER_FEATURE_SIZE) != INTER_FEATURE_SIZE) {
+            perror("Failed to send feature");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     void finish() {
         if (_skim_start) {
@@ -55,12 +108,15 @@ public:
 
 private:
     int _sock_meta;
+    int _sock_feature;
     bool _skim_start;
     int _skim_start_idx;
     int _last_received_idx;
     uint32_t _skim_start_time;
     uint32_t _last_received_time;
     RpiVideoWriter* _writer;
+
+    char* _feature_buf;
 
     void stream_shot(int start_idx, int stop_idx, uint32_t start_time, uint32_t stop_time) {
         printf("Streaming Shot: %d %d %u %u\n", _skim_start_idx, _last_received_idx + 1
@@ -82,39 +138,8 @@ static uint64_t gettime() {
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
-// class ShotInfoSender {
-// public:
-//     ShotInfoSender(int sockfd): _sockfd(sockfd), _thread(run, sockfd, &_queue) {}
-//
-//     void sendShotInfo(Shot& s) {
-//         _queue.push(s);
-//     }
-//     void end() {
-//         _queue.push(Shot(0, 0));
-//         _thread.join();
-//     }
-// private:
-//     ConcurrentQueue<Shot> _queue;
-//     int _sockfd;
-//     std::thread _thread;
-//
-//     static void run(int fd, ConcurrentQueue<Shot>* q) {
-//         Shot s;
-//         int32_t buf[2];
-//         while (true) {
-//             s = q->pop();
-//             if (s.first == 0 && s.second == 0) break;
-//             buf[0] = s.first;
-//             buf[1] = s.second;
-//             if (sendall(fd, (char*) buf, 2 * sizeof(int32_t)) < 0) {
-//                 perror("Failed to send segment information");
-//                 exit(EXIT_FAILURE);
-//             }
-//         }
-//     }
-// };
-
-void run_sensor(int width, int height, int encoder_fd, int sock_meta, bool* stop_flag) {
+void run_sensor(int width, int height, int encoder_fd, int sock_meta, int sock_feature,
+        FeatureReceiver* receiver, bool* stop_flag) {
 
     RpiVideoCapture& cap = RpiVideoCapture::getInstance();
     cap.init(width, height);
@@ -122,7 +147,7 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, bool* stop
     RpiVideoWriter& writer = RpiVideoWriter::getInstance();
     writer.init(width, height, 30, encoder_fd);
 
-    RpiSender sender(sock_meta, &writer);
+    RpiSender sender(sock_meta, sock_feature, &writer);
     Sensor sensor(&sender, false);
 
     list<FeaturePacket> features;
@@ -134,7 +159,9 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, bool* stop
         if (idx != 0) {
             printf("Frame #%d, FPS = %f\n", idx, 1000.0f / (time-prev_time));
         }
+        receiver->readFeature(features);
         sensor.next(idx, frame, gettime(), features);
+        features.clear();
         idx++;
         prev_time = time;
     }
@@ -210,7 +237,10 @@ int main(int argc, char *argv[]) {
 
     printf("Starting...\n");
     bool stop_sensor_flag = false;
-    std::thread sensor_thread(run_sensor, width, height, encoder_pipe[1], sock_meta, &stop_sensor_flag);
+    FeatureReceiver receiver(sock_feature);
+    receiver.start();
+    std::thread sensor_thread(run_sensor, width, height, encoder_pipe[1],
+            sock_meta, sock_feature, &receiver, &stop_sensor_flag);
     std::thread video_thread(run_video, sock_video, encoder_pipe[0]);
 
     msg = recv_msg(sock_meta);
