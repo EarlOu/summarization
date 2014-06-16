@@ -109,8 +109,6 @@ static void wait_connection(int svc, vector<ConnectInfo>& client) {
 
 typedef std::pair<int, char*> Feature;
 
-const int FEATURE_SIZE = INTER_FEATURE_DIM * 4 + 1 + 1;
-
 class FeatureSender {
 public:
     FeatureSender(std::vector<ConnectInfo>& info)
@@ -144,7 +142,7 @@ private:
             int vid = f.first;
             for (int i=0, n=info->size(); i<n; ++i) {
                 if (i == vid) continue;
-                if (sendall(info->operator[](i).sock_feature, f.second, FEATURE_SIZE) != FEATURE_SIZE) {
+                if (sendall(info->operator[](i).sock_feature, f.second, INTER_FEATURE_SIZE) != INTER_FEATURE_SIZE) {
                     perror("Failed to send feature");
                     exit(EXIT_FAILURE);
                 }
@@ -224,9 +222,9 @@ private:
     }
 
     static void run_video(int socket, FILE* ofile) {
-        uint8_t buf[65536];
+        uint8_t buf[STREAM_PACKET_SIZE];
         int n;
-        while ((n = recv(socket, buf, 65536, 0)) > 0) {
+        while ((n = recv(socket, buf, STREAM_PACKET_SIZE, 0)) > 0) {
             fwrite(buf, n, 1, ofile);
             fflush(ofile);
         }
@@ -237,11 +235,11 @@ private:
     }
 
     static void run_feature(int socket, int vid, FeatureSender* sender) {
-        char data[FEATURE_SIZE];
+        static char data[INTER_FEATURE_SIZE];
         int n;
-        while ((n = recvall(socket, data, FEATURE_SIZE)) == FEATURE_SIZE) {
-            char* buf = new char[FEATURE_SIZE];
-            memcpy(buf, data, FEATURE_SIZE);
+        while ((n = recvall(socket, data, INTER_FEATURE_SIZE)) == INTER_FEATURE_SIZE) {
+            char* buf = new char[INTER_FEATURE_SIZE];
+            memcpy(buf, data, INTER_FEATURE_SIZE);
             Feature f;
             f.first = vid;
             f.second = buf;

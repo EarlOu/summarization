@@ -146,9 +146,9 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, bool* stop
 }
 
 void run_video(int sockfd, int encode_fd) {
-    char buf[65536];
+    char buf[STREAM_PACKET_SIZE];
     int n;
-    while ((n = read(encode_fd, buf, 65536)) > 0) {
+    while ((n = read(encode_fd, buf, STREAM_PACKET_SIZE)) > 0) {
         if (sendall(sockfd, buf, n) != n) {
             perror("Failed to stream video");
             exit(EXIT_FAILURE);
