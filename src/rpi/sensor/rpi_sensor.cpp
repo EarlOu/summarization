@@ -51,10 +51,13 @@ private:
         char* data = new char[INTER_FEATURE_SIZE];
         int n;
         while ((n = recvall(sock_feature, data, INTER_FEATURE_SIZE)) == INTER_FEATURE_SIZE) {
+            char* b = new char[INTER_FEATURE_SIZE];
+            memcpy(b, data, INTER_FEATURE_SIZE);
             std::unique_lock<std::mutex> lock(*mutex);
-            buf->push_back(data);
+            buf->push_back(b);
             lock.unlock();
         }
+        delete[] data;
         if (n != 0) {
             perror("Failed to receive feature");
             exit(EXIT_FAILURE);
