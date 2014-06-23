@@ -143,7 +143,7 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, int sock_f
     cap.init(width, height, FPS);
 
     RpiVideoWriter& writer = RpiVideoWriter::getInstance();
-    writer.init(width, height, 30, encoder_fd);
+    writer.init(width, height, FPS, encoder_fd);
 
     RpiSender sender(sock_meta, sock_feature, &writer);
     Sensor sensor(&sender, false);
