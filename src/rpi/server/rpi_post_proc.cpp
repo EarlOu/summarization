@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
 
     while (!pri_que.empty()) {
         SegQueue* que = pri_que.top();
+        pri_que.pop();
         SegQueue buf;
         int n_frm = 0;
         while (!que->empty()) {
