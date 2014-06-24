@@ -73,8 +73,8 @@ int OnlineClusterMog::cluster(InputArray iFeature, OutputArray oResidue) {
         }
 
         _cluster[idx].mean = feature.clone();
-        _cluster[idx].sigma = 0.005;
-        _cluster[idx].weight = 0.01 / _K;
+        _cluster[idx].sigma = _INIT_SIGMA;
+        _cluster[idx].weight = 0.005 / _cluster.size();
 
         // Re-normalized again
         total_weight = 0;
