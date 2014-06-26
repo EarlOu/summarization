@@ -139,7 +139,7 @@ void Sensor::next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePac
         float score;
         _onlineCluster.getBackground(background);
         extractIntraStageFeature(frame, feature, background, intraFeature, score);
-        _buf.push_back(BufferedFeature(intraFeature, score, time, frame, idx));
+        _buf.push_back(BufferedFeature(intraFeature, score, time, frame.clone(), idx));
         _sender->sendFeature(intraFeature, score, time, idx);
     }
 
@@ -147,7 +147,7 @@ void Sensor::next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePac
     for (list<FeaturePacket>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
         list<BufferedFeature>::iterator it_b;
         for (it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
-            if (abs(it_r->time - it_b->time) < FEATURE_MATCH_TIME_TH) break;
+            if (abs((double)it_r->time - (double)it_b->time) < FEATURE_MATCH_TIME_TH) break;
         }
         if (it_b != _buf.end()
                 && it_r->score > it_b->score
