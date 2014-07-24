@@ -146,7 +146,7 @@ void run_sensor(int width, int height, int encoder_fd, int sock_meta, int sock_f
     writer.init(width, height, FPS, encoder_fd);
 
     RpiSender sender(sock_meta, sock_feature, &writer);
-    Sensor sensor(&sender, 9, 0.006, 0.5, 0.01, false, 5000);
+    Sensor sensor(&sender, 9, 0.004, 0.5, 0.01, false, 5000);
 
     list<FeaturePacket> features;
     Mat frame;
