@@ -10,9 +10,9 @@ using namespace cv;
 #include <algorithm>
 
 #define N_BLOCK 8
-#define BUFFER_TIME 3000 // 3 seconds buffer time for network delay
-#define FEATURE_MATCH_TIME_TH 10
-#define FEATURE_MATCH_TH 1
+#define BUFFER_TIME 10000 // 3 seconds buffer time for network delay
+#define FEATURE_MATCH_TIME_TH 25
+#define FEATURE_MATCH_TH 7
 
 static void bgr2h(InputArray iFrame, OutputArray oHFrame, InputArray iMask) {
     Mat frame = iFrame.getMat();
@@ -154,6 +154,7 @@ void Sensor::next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePac
         for (it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
             if (abs((double)it_r->time - (double)it_b->time) < FEATURE_MATCH_TIME_TH) break;
         }
+        if (it_b != _buf.end()) printf("%lf\n", compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA));
         if (it_b != _buf.end()
                 && it_r->score > it_b->score
                 && compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA) < FEATURE_MATCH_TH) {
