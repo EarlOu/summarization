@@ -13,7 +13,6 @@ using namespace cv;
 #define BUFFER_TIME 3000 // 3 seconds buffer time for network delay
 #define FEATURE_MATCH_TIME_TH 10
 #define FEATURE_MATCH_TH 0.7
-#define LEARNING_TIME 5000 // 5 seconds learning time, discard all frames
 
 static void bgr2h(InputArray iFrame, OutputArray oHFrame, InputArray iMask) {
     Mat frame = iFrame.getMat();
@@ -126,9 +125,9 @@ void Sensor::next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePac
         choose = !_onlineCluster.isBackground(c);
     }
 
-    if (LEARNING_TIME > 0) {
+    if (TIME_TO_IGNORE > 0) {
         static const uint32_t start_time = time;
-        if (time - start_time < LEARNING_TIME) return;
+        if (time - start_time < TIME_TO_IGNORE) return;
     }
 
     if (INTRA_ONLY) {

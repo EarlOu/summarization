@@ -18,7 +18,7 @@ int OnlineClusterMog::cluster(InputArray iFeature, OutputArray oResidue) {
     bool matched = false;
     double total_weight = 0;
     int matchIdx = 0;
-    int maxLikelihood = -INT_MAX;
+    int maxLikelihood = INT_MIN;
 
     for (int i=0, n=_cluster.size(); i<n; ++i) {
         Mat diff = (feature - _cluster[i].mean);
@@ -27,7 +27,7 @@ int OnlineClusterMog::cluster(InputArray iFeature, OutputArray oResidue) {
         double likelihood = - 0.5 * diff.rows * log(_cluster[i].sigma) - 0.5 * b;
 
         // printf("%d %lf %lf %lf %lf\n", i, accuDiff, b, _cluster[i].sigma, _cluster[i].weight);
-        if (b < _K && likelihood > maxLikelihood) {
+        if (b < 9 && likelihood > maxLikelihood) {
             maxLikelihood = likelihood;
             matchIdx = i;
             matched = true;

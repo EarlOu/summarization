@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
     VideoCapture cap(argv[1]);
     IntraSimulateSender sender;
-    Sensor sensor(&sender, true);
+    Sensor sensor(&sender, 9, 0.004, 0.5, 0.005, true);
 
     list<FeaturePacket> features;
     Mat frame;

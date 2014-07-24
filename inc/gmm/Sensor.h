@@ -15,19 +15,24 @@ using std::list;
 
 class Sensor {
 public:
-    Sensor(Sender* sender, bool intra_only = false)
-            : _sender(sender), INTRA_ONLY(intra_only), _featureExtractor(N_BLOCK) {}
+    Sensor(Sender* sender,
+            int K, double alpha, double T, double init_sigma,
+            bool intra_only = false, int time_to_ignore = 0)
+            : _sender(sender), _onlineCluster(K, alpha, T, init_sigma), _featureExtractor(N_BLOCK),
+              INTRA_ONLY(intra_only), TIME_TO_IGNORE(time_to_ignore) {}
+
     void next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePacket>& features);
     void finish();
 private:
     Sender* _sender;
-    bool INTRA_ONLY;
     FeatureExtractorCl _featureExtractor;
     OnlineClusterMog _onlineCluster;
     list<BufferedFeature> _buf;
+    const bool INTRA_ONLY;
+    const int TIME_TO_IGNORE;
 
     // disable default copy constructor and assign operator
-    Sensor(const Sensor&) {}
+    Sensor(const Sensor&): _onlineCluster(0, 0, 0, 0), INTRA_ONLY(false), TIME_TO_IGNORE(0) {}
     void operator=(const Sensor&) {}
 };
 

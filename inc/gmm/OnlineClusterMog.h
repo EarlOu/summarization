@@ -5,8 +5,8 @@
 
 class OnlineClusterMog : public OnlineCluster {
 public:
-    // BL2
-    OnlineClusterMog():_K(9), _alpha(0.004), _T(0.5), _INIT_SIGMA(0.005) {};
+    OnlineClusterMog(int K, double alpha, double T, double init_sigma)
+            :_K(K), _alpha(alpha), _T(T), _INIT_SIGMA(init_sigma) {};
     int cluster(InputArray feature, OutputArray residue);
 
     bool isBackground(int cluster);
@@ -22,11 +22,11 @@ private:
         int index;
     };
 
-    int _K;
-    double _alpha;
+    const int _K;
+    const double _alpha;
+    const double _T;
+    const double _INIT_SIGMA;
     vector<Cluster> _cluster;
-    double _T;
-    double _INIT_SIGMA;
 
     class ClusterComparator {
     public:
