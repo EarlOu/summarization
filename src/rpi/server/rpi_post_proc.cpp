@@ -18,7 +18,7 @@ struct Seg {
     int vid;
 };
 
-const int TH_TIME_GAP = 1000;
+const int TH_TIME_GAP = 400;
 const int TH_MIN_SHOT_FRM = FPS * 1;
 
 int main(int argc, char *argv[]) {
