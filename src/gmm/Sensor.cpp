@@ -11,8 +11,8 @@ using namespace cv;
 
 #define N_BLOCK 8
 #define BUFFER_TIME 10000 // 3 seconds buffer time for network delay
-#define FEATURE_MATCH_TIME_TH 25
-#define FEATURE_MATCH_TH 7
+#define FEATURE_MATCH_TIME_TH 27
+#define FEATURE_MATCH_TH 0.7
 
 static void bgr2h(InputArray iFrame, OutputArray oHFrame, InputArray iMask) {
     Mat frame = iFrame.getMat();
