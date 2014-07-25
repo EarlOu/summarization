@@ -15,10 +15,10 @@ using std::list;
 
 class Sensor {
 public:
-    Sensor(Sender* sender,
+    Sensor(Sender* sender, int fps,
             int K, double alpha, double T, double init_sigma,
             bool intra_only = false, int time_to_ignore = 0)
-            : _sender(sender), _onlineCluster(K, alpha, T, init_sigma), _featureExtractor(N_BLOCK),
+            : _sender(sender), FPS(fps), _onlineCluster(K, alpha, T, init_sigma), _featureExtractor(N_BLOCK),
               INTRA_ONLY(intra_only), TIME_TO_IGNORE(time_to_ignore) {}
 
     void next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePacket>& features);
@@ -30,9 +30,10 @@ private:
     list<BufferedFeature> _buf;
     const bool INTRA_ONLY;
     const int TIME_TO_IGNORE;
+    const int FPS;
 
     // disable default copy constructor and assign operator
-    Sensor(const Sensor&): _onlineCluster(0, 0, 0, 0), INTRA_ONLY(false), TIME_TO_IGNORE(0) {}
+    Sensor(const Sensor&): FPS(30), _onlineCluster(0, 0, 0, 0), INTRA_ONLY(false), TIME_TO_IGNORE(0) {}
     void operator=(const Sensor&) {}
 };
 

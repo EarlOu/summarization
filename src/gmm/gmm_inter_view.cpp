@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
 
         caps.push_back(cap);
         senders.push_back(new SimulateSender(server, i));
-        sensors.push_back(new Sensor(senders[i], 9, 0.004, 0.5, 0.005));
+        sensors.push_back(new Sensor(senders[i], FPS, 9, 0.004, 0.5, 0.005));
     }
 
     int idx = 0;

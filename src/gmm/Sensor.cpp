@@ -11,7 +11,6 @@ using namespace cv;
 
 #define N_BLOCK 8
 #define BUFFER_TIME 10000 // 3 seconds buffer time for network delay
-#define FEATURE_MATCH_TIME_TH 27
 #define FEATURE_MATCH_TH 0.7
 
 static void bgr2h(InputArray iFrame, OutputArray oHFrame, InputArray iMask) {
@@ -149,12 +148,12 @@ void Sensor::next(int idx, cv::InputArray iFrame, uint32_t time, list<FeaturePac
     }
 
     // match frames in the buffer
+    static const int FEATURE_MATCH_TIME_TH = 1000 * 0.6 / FPS;
     for (list<FeaturePacket>::iterator it_r = features.begin(); it_r != features.end(); it_r++) {
         list<BufferedFeature>::iterator it_b;
         for (it_b = _buf.begin(); it_b != _buf.end(); it_b++) {
             if (abs((double)it_r->time - (double)it_b->time) < FEATURE_MATCH_TIME_TH) break;
         }
-        if (it_b != _buf.end()) printf("%lf\n", compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA));
         if (it_b != _buf.end()
                 && it_r->score > it_b->score
                 && compareHist(it_r->feature, it_b->feature, CV_COMP_BHATTACHARYYA) < FEATURE_MATCH_TH) {
